@@ -161,6 +161,7 @@
   </div>
 
   <!-- Scripts JavaScript -->
+   //0 = Dimanche, 1 = Lundi, 2 = Mardi, 3 = Mercredi, 4 = Jeudi, 5 = Vendredi, 6 = Samedi
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
   <script>
@@ -181,7 +182,7 @@
           nom: "ORLÉANS - Gare Routière",
           lat: 47.90834803952763, lng: 1.9075415421608128,
           horaires: [
-            {depart: "06:25", arrivee: "06:48", ligne: "20a", car: "Car 202", dest: "NEUVILLE (Stade)"},
+            {depart: "06:25", arrivee: "06:57", ligne: "20a", car: "Car 2", dest: "NEUVILLE (Stade)", jours: [1,  2, 3, 4, 5]},
             {depart: "07:20", arrivee: "07:43", ligne: "20a", car: "Car 206", dest: "NEUVILLE (Stade)"},
             {depart: "07:45", arrivee: "08:10", ligne: "20a", car: "Car 208", dest: "NEUVILLE (Stade)"},
             {depart: "08:00", arrivee: "08:29", ligne: "20b", car: "Car 2", dest: "NEUVILLE (Rive du Bois)"},
@@ -300,6 +301,16 @@
 
     // 5. Calcul du prochain bus
     function findNextBus(userLat, userLng) {
+      const now = new Date();
+      const dayOfWeek = now.getDay(); // 0 = Dimanche, 6 = Samedi
+      const resultContainer = document.getElementById('bus-result');
+
+      // 1. Vérification du Week-end (Samedi = 6, Dimanche = 0)
+      if (dayOfWeek === 0 || dayOfWeek === 6) {
+        resultContainer.innerHTML = "<b>C'est le week-end !</b> Les bus Rémi de cette ligne ne circulent pas aujourd'hui.";
+        return;
+      }
+
       let arretProche = DATA.arrets[0];
       let distMin = calcDistance(userLat, userLng, DATA.arrets[0].lat, DATA.arrets[0].lng);
 
@@ -311,10 +322,13 @@
         }
       }
 
-      const now = new Date();
       const currentHM = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-      const prochain = arretProche.horaires.find(h => h.depart >= currentHM);
-      const resultContainer = document.getElementById('bus-result');
+      
+      // 2. Filtre : Heure supérieure À MAINTENANT + Le jour actuel doit être dans le tableau "jours"
+      const prochain = arretProche.horaires.find(h => {
+        const rouleAujourdhui = !h.jours || h.jours.includes(dayOfWeek);
+        return h.depart >= currentHM && rouleAujourdhui;
+      });
 
       if (prochain) {
         const badgeClass = prochain.ligne === "20a" ? "badge-20a" : "badge-20b";
@@ -327,22 +341,7 @@
       }
 
       selectArret(arretProche.id);
-    }
-
-    // 6. Tableau et recherche
-    function renderTabs() {
-      const tabsContainer = document.getElementById('tabs');
-      tabsContainer.innerHTML = '';
-      
-      DATA.arrets.forEach(a => {
-        const btn = document.createElement('button');
-        btn.className = `tab-btn ${a.id === currentArretId ? 'active' : ''}`;
-        btn.innerText = a.nom.split(' - ')[1] || a.nom;
-        btn.onclick = () => selectArret(a.id);
-        tabsContainer.appendChild(btn);
-      });
-    }
-
+  }
     function selectArret(arretId) {
       currentArretId = arretId;
       renderTabs();
@@ -353,13 +352,16 @@
       const arret = DATA.arrets.find(a => a.id === currentArretId);
       const query = document.getElementById('search-destination').value.toLowerCase().trim();
       const tableContainer = document.getElementById('table-container');
+      const dayOfWeek = new Date().getDay();
 
-      const horairesFiltres = arret.horaires.filter(h => 
-        h.dest.toLowerCase().includes(query)
-      );
+      const horairesFiltres = arret.horaires.filter(h => {
+        const matchDest = h.dest.toLowerCase().includes(query);
+        const rouleAujourdhui = !h.jours || h.jours.includes(dayOfWeek);
+        return matchDest && rouleAujourdhui;
+      });
 
-      if (horairesFiltres.length === 0) {
-        tableContainer.innerHTML = `<div class="no-result">Aucun bus vers cette destination pour cet arrêt.</div>`;
+      if (horairesFiltres.length === 0 || dayOfWeek === 0 || dayOfWeek === 6) {
+        tableContainer.innerHTML = `<div class="no-result">Aucun bus ne circule aujourd'hui pour cet arrêt/destination.</div>`;
         return;
       }
 
