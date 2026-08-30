@@ -23,7 +23,7 @@
 
   <!-- Section Grille Horaire avec Recherche et Heures -->
   <div class="card" id="card-horaires">
-    <h2>📋 Fiche Horaire Période Scolaire</h2>
+    <h2>📋 Fiche horaire du jour</h2>
 
     <div class="tabs-container" id="tabs"></div>
 
@@ -31,10 +31,15 @@
       type="text" 
       id="search-destination" 
       class="search-box" 
-      placeholder="🔍 Chercher une destination (ex: Stade, Rive du Bois, Orléans...)"
-      oninput="filterHoraires()">
+      placeholder="🔍 Filtrer par destination (ex : Orléans, Pithiviers, Loury)">
 
     <div id="table-container"></div>
+
+    <p class="source">
+      Horaires issus du <a href="https://transport.data.gouv.fr/datasets/remi-offre-theorique-mobilite-reseau-interurbain-regional">GTFS Rémi</a>
+      (ODbL) — arrêts et couleurs de lignes via
+      <a href="https://data.centrevaldeloire.fr/">data.centrevaldeloire.fr</a>.
+    </p>
   </div>
 </body>
 </html>

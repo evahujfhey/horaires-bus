@@ -1,314 +1,288 @@
-//0 = Dimanche, 1 = Lundi, 2 = Mardi, 3 = Mercredi, 4 = Jeudi, 5 = Vendredi, 6 = Samedi
-function renderTabs() {
-  const tabsContainer = document.getElementById('tabs');
-  if (!tabsContainer) return;
-  
-  let html = '';
-  DATA.arrets.forEach(arret => {
-    const activeClass = arret.id === currentArretId ? 'active' : '';
-    html += `<button class="tab-btn ${activeClass}" onclick="selectArret('${arret.id}')">${arret.nom}</button>`;
-  });
-  tabsContainer.innerHTML = html;
-}
+/* Horaires Rémi 45 — lignes 20A et 20B
+ *
+ * Sources de données (aucune clé d'API) :
+ *   - data/horaires.json  : arrêts, départs et calendriers, extraits du GTFS ouvert
+ *                           par build-horaires.py (le GTFS lui-même n'a pas d'en-tête
+ *                           CORS, un navigateur ne peut donc pas le lire directement)
+ *   - data.centrevaldeloire.fr : libellés et couleurs officiels des lignes
+ *   - data.education.gouv.fr   : calendrier scolaire de la zone Orléans-Tours
+ */
 
-// 0. Détection du Mode Widget dans l'URL (?mode=widget)
-const urlParams = new URLSearchParams(window.location.search);
-if (urlParams.get('mode') === 'widget') {
-document.body.classList.add('widget-mode');
-}
-
-let currentArretId = "orleans_gare";
-let userMarker = null;
-
-// 1. Données complètes
-const DATA = {
-arrets: [
-    {
-    id: "orleans_gare",
-    nom: "ORLÉANS - Gare Routière",
-    lat: 47.90875838982201, lng: 1.9076689955929347,
-    horaires: [
-        {depart: "06:25", arrivee: "06:57", ligne: "20a", car: "Car 2", dest: "NEUVILLE (Stade)", jours: [1, 2, 3, 4, 5]},
-        {depart: "11:08", arrivee: "11:38", ligne: "20a", car: "Car 10", dest: "NEUVILLE (Stade)", jours: [1, 2, 3, 4, 5]},
-        {depart: "11:40", arrivee: "12:11", ligne: "20a", car: "Car 14", dest: "NEUVILLE (Stade)", jours: [3]},
-        {depart: "12:28", arrivee: "13:02", ligne: "20a", car: "Car 16", dest: "NEUVILLE (Stade)", jours: [1, 2, 3, 4, 5]},
-        {depart: "12:28", arrivee: "13:02", ligne: "20a", car: "Car 216", dest: "NEUVILLE (Stade)", jours: [3]},
-        {depart: "13:10", arrivee: "13:42", ligne: "20a", car: "Car 18", dest: "NEUVILLE (Stade)", jours: [3]},
-        {depart: "15:00", arrivee: "15:31", ligne: "20a", car: "Car 20", dest: "NEUVILLE (Stade)", jours: [1, 2, 3, 4, 5]},
-        {depart: "16:05", arrivee: "16:36", ligne: "20a", car: "Car 22", dest: "NEUVILLE (Stade)", jours: [1, 2, 3, 4, 5]},
-        {depart: "16:05", arrivee: "16:36", ligne: "20a", car: "Car 222", dest: "NEUVILLE (Stade)", jours: [1, 2, 3, 4, 5]},
-        {depart: "17:20", arrivee: "17:58", ligne: "20a", car: "Car 26", dest: "NEUVILLE (Stade)", jours: [1, 2, 3, 4, 5]},
-        {depart: "17:20", arrivee: "17:58", ligne: "20a", car: "Car 226", dest: "NEUVILLE (Stade)", jours: [1, 2, 3, 4, 5]},
-        {depart: "18:05", arrivee: "18:40", ligne: "20a", car: "Car 32", dest: "NEUVILLE (Stade)", jours: [1, 2, 3, 4, 5]},
-        {depart: "18:35", arrivee: "19:07", ligne: "20a", car: "Car 38", dest: "NEUVILLE (Stade)", jours: [1, 2, 3, 4, 5]},
-        {depart: "19:25", arrivee: "19:55", ligne: "20a", car: "Car 40", dest: "NEUVILLE (Stade)", jours: [1, 2, 3, 4, 5]},
-        {depart: "08:00", arrivee: "08:45", ligne: "20b", car: "Car 2", dest: "NEUVILLE (Stade)", jours: [1, 2, 3, 4, 5]},
-        {depart: "12:25", arrivee: "13:13", ligne: "20b", car: "Car 4", dest: "NEUVILLE (Stade)", jours: [1, 2, 3, 4, 5]},
-        {depart: "13:10", arrivee: "14:04", ligne: "20b", car: "Car 8", dest: "NEUVILLE (Stade)", jours: [3]},
-        {depart: "16:20", arrivee: "17:07", ligne: "20b", car: "Car 12", dest: "NEUVILLE (Stade)", jours: [1, 2, 4, 5]},
-        {depart: "18:05", arrivee: "19:02", ligne: "20b", car: "Car 20", dest: "NEUVILLE (Stade)", jours: [1, 2, 4, 5]},
-        {depart: "18:35", arrivee: "19:24", ligne: "20b", car: "Car 22", dest: "NEUVILLE (Stade)", jours: [1, 2, 3, 4, 5]},
-        {depart: "07:20", arrivee: "07:55", ligne: "20a", car: "Car 4", dest: "NEUVILLE (Rive du Bois)", jours: [1, 2, 3, 4, 5]},
-        {depart: "08:00", arrivee: "08:42", ligne: "20b", car: "Car 2", dest: "NEUVILLE (Rive du Bois)", jours: [1, 2, 3, 4, 5]},
-        {depart: "12:25", arrivee: "13:10", ligne: "20b", car: "Car 4", dest: "NEUVILLE (Rive du Bois)", jours: [1, 2, 3, 4, 5]},
-        {depart: "13:10", arrivee: "14:02", ligne: "20b", car: "Car 8", dest: "NEUVILLE (Rive du Bois)", jours: [3]},
-        {depart: "16:20", arrivee: "17:04", ligne: "20b", car: "Car 12", dest: "NEUVILLE (Rive du Bois)", jours: [1, 2, 4, 5]},
-        {depart: "18:05", arrivee: "18:59", ligne: "20b", car: "Car 20", dest: "NEUVILLE (Rive du Bois)", jours: [1, 2, 4, 5]},
-        {depart: "18:35", arrivee: "19:19", ligne: "20b", car: "Car 22", dest: "NEUVILLE (Rive du Bois)", jours: [1, 2, 3, 4, 5]},
-        {depart: "08:00", arrivee: "08:36", ligne: "20b", car: "Car 2", dest: "LOURY (Place)", jours: [1, 2, 3, 4, 5]},
-        {depart: "12:25", arrivee: "13:04", ligne: "20b", car: "Car 4", dest: "LOURY (Place)", jours: [1, 2, 3, 4, 5]},
-        {depart: "13:10", arrivee: "13:55", ligne: "20b", car: "Car 8", dest: "LOURY (Place)", jours: [3]},
-        {depart: "16:20", arrivee: "16:58", ligne: "20b", car: "Car 12", dest: "LOURY (Place)", jours: [1, 2, 4, 5]},
-        {depart: "17:15", arrivee: "17:56", ligne: "20b", car: "Car 14", dest: "LOURY (Place)", jours: [1, 2, 3, 4, 5]},
-        {depart: "18:05", arrivee: "18:51", ligne: "20b", car: "Car 20", dest: "LOURY (Place)", jours: [1, 2, 4, 5]},
-        {depart: "18:35", arrivee: "19:14", ligne: "20b", car: "Car 22", dest: "LOURY (Place)", jours: [1, 2, 3, 4, 5]},
-    ]
-    },
-    {
-    id: "loury_eglise",
-    nom: "LOURY - Place de l'Église",
-    lat: 48.001396798227134, lng: 2.085724363211092,
-    horaires: [
-        {depart: "06:37", arrivee: "07:15", ligne: "20b", car: "Car 1", dest: "ORLÉANS Gare Routière", jours: [1, 2, 3, 4, 5]},
-        {depart: "06:37", arrivee: "07:15", ligne: "20b", car: "Car 3", dest: "ORLÉANS Gare Routière", jours: [1, 2, 3, 4, 5]},
-        {depart: "07:15", arrivee: "08:05", ligne: "20b", car: "Car 7", dest: "ORLÉANS Gare Routière", jours: [1, 2, 3, 4, 5]},
-        {depart: "08:10", arrivee: "08:52", ligne: "20b", car: "Car 9", dest: "ORLÉANS Gare Routière", jours: [1, 2, 3, 4, 5]},
-        {depart: "09:15", arrivee: "09:55", ligne: "20b", car: "Car 11", dest: "ORLÉANS Gare Routière", jours: [1, 2, 3, 4, 5]},
-        {depart: "13:35", arrivee: "14:13", ligne: "20b", car: "Car 15", dest: "ORLÉANS Gare Routière", jours: [1, 2, 3, 4, 5]},
-        {depart: "17:35", arrivee: "18:15", ligne: "20b", car: "Car 17", dest: "ORLÉANS Gare Routière", jours: [1, 2, 4, 5]},
-    ]
-    },
-    {
-    id: "neuville_stade",
-    nom: "NEUVILLE - Stade",
-    lat: 48.06788554307025, lng: 2.0480983930336536,
-    horaires: [
-        {depart: "06:25", arrivee: "07:15", ligne: "20b", car: "Car 1", dest: "ORLÉANS Gare Routière", jours: [1, 2, 3, 4, 5]},
-        {depart: "06:25", arrivee: "07:15", ligne: "20b", car: "Car 3", dest: "ORLÉANS Gare Routière", jours: [1, 2, 3, 4, 5]},
-        {depart: "07:05", arrivee: "08:05", ligne: "20b", car: "Car 7", dest: "ORLÉANS Gare Routière", jours: [1, 2, 3, 4, 5]},
-        {depart: "09:05", arrivee: "09:55", ligne: "20b", car: "Car 11", dest: "ORLÉANS Gare Routière", jours: [1, 2, 3, 4, 5]},
-        {depart: "13:23", arrivee: "14:13", ligne: "20b", car: "Car 15", dest: "ORLÉANS Gare Routière", jours: [1, 2, 3, 4, 5]},
-        {depart: "17:25", arrivee: "18:15", ligne: "20b", car: "Car 17", dest: "ORLÉANS Gare Routière", jours: [1, 2, 4, 5]},
-        {depart: "06:48", arrivee: "07:25", ligne: "20a", car: "Car 5", dest: "ORLÉANS Gare Routière", jours: [1, 2, 3, 4, 5]},
-        {depart: "07:35", arrivee: "08:12", ligne: "20a", car: "Car 11", dest: "ORLÉANS Gare Routière", jours: [1, 2, 3, 4, 5]},
-        {depart: "08:05", arrivee: "08:45", ligne: "20a", car: "Car ", dest: "ORLÉANS Gare Routière", jours: [1, 2, 3, 4, 5]},
-
-        {depart: "06:25", arrivee: "07:12", ligne: "20b", car: "Car 5", dest: "ORLÉANS Gare Routière"},
-        {depart: "06:25", arrivee: "07:15", ligne: "20b", car: "Car 7", dest: "ORLÉANS Gare Routière"},
-        {depart: "06:48", arrivee: "07:22", ligne: "20a", car: "Car 1", dest: "ORLÉANS Gare Routière"},
-        {depart: "07:00", arrivee: "07:35", ligne: "20a", car: "Car 3", dest: "ORLÉANS Gare Routière"},
-        {depart: "07:05", arrivee: "07:55", ligne: "20b", car: "Car 9", dest: "ORLÉANS Gare Routière"},
-        {depart: "07:35", arrivee: "08:15", ligne: "20a", car: "Car 5", dest: "ORLÉANS Gare Routière"},
-        {depart: "10:45", arrivee: "11:32", ligne: "20b", car: "Car 15", dest: "ORLÉANS Gare Routière"},
-        {depart: "12:57", arrivee: "13:30", ligne: "20a", car: "Car 7", dest: "ORLÉANS Gare Routière"},
-        {depart: "13:57", arrivee: "14:30", ligne: "20a", car: "Car 11", dest: "ORLÉANS Gare Routière"},
-        {depart: "14:07", arrivee: "14:40", ligne: "20a", car: "Car 13", dest: "ORLÉANS Gare Routière"},
-        {depart: "16:51", arrivee: "17:25", ligne: "20a", car: "Car 17", dest: "ORLÉANS Gare Routière"},
-        {depart: "17:18", arrivee: "18:12", ligne: "20b", car: "Car 17", dest: "ORLÉANS Gare Routière"},
-        {depart: "18:15", arrivee: "18:50", ligne: "20a", car: "Car 19", dest: "ORLÉANS Gare Routière"}
-    ]
-    },
-    {
-    id: "neuville_rive",
-    nom: "NEUVILLE - Rive du Bois",
-    lat: 48.05272814506002, lng: 2.0557968977569936,
-    horaires: [
-        {depart: "06:29", arrivee: "07:12", ligne: "20b", car: "Car 5", dest: "ORLÉANS Gare Routière"},
-        {depart: "06:29", arrivee: "07:15", ligne: "20b", car: "Car 7", dest: "ORLÉANS Gare Routière"},
-        {depart: "07:08", arrivee: "07:55", ligne: "20b", car: "Car 9", dest: "ORLÉANS Gare Routière"},
-        {depart: "07:55", arrivee: "08:30", ligne: "20a", car: "Car 3", dest: "ORLÉANS Gare Routière"},
-        {depart: "10:48", arrivee: "11:32", ligne: "20b", car: "Car 15", dest: "ORLÉANS Gare Routière"},
-        {depart: "17:29", arrivee: "18:12", ligne: "20b", car: "Car 17", dest: "ORLÉANS Gare Routière"}
-    ]
-    }
-]
+const CONFIG = {
+  horaires: 'data/horaires.json',
+  lignes: 'https://data.centrevaldeloire.fr/api/explore/v2.1/catalog/datasets/jvmalin_lignes/records'
+        + '?limit=10&where=' + encodeURIComponent('route_short_name in ("20A","20B")'),
+  vacances: 'https://data.education.gouv.fr/api/explore/v2.1/catalog/datasets/fr-en-calendrier-scolaire/records',
+  arretParDefaut: 'Neuville-aux-Bois'
 };
 
-// 1bis. Tri des horaires par heure de départ.
-// findNextBus() et filterHoraires() parcourent le tableau dans l'ordre :
-// sans ce tri, le "prochain bus" renvoyé est le premier de la liste, pas le plus proche.
-DATA.arrets.forEach(a => a.horaires.sort((x, y) => x.depart.localeCompare(y.depart)));
+let REF = null;            // contenu de horaires.json
+let currentArretId = null;
+let map = null;
+let userMarker = null;
 
+/* ------------------------------------------------------------------ dates */
 
-// 2. Initialisation Carte
-const map = L.map('map').setView([48.0000, 2.0000], 10);
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-attribution: '© OpenStreetMap'
-}).addTo(map);
-
-DATA.arrets.forEach(a => {
-L.marker([a.lat, a.lng]).addTo(map).bindPopup(`<b>${a.nom}</b>`);
-});
-
-// 3. Distance GPS
-function calcDistance(lat1, lon1, lat2, lon2) {
-const R = 6371;
-const dLat = (lat2 - lat1) * Math.PI / 180;
-const dLon = (lon2 - lon1) * Math.PI / 180;
-const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-            Math.sin(dLon/2) * Math.sin(dLon/2);
-return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
+// "20260907" — format des calendriers GTFS
+function ymd(d) {
+  return String(d.getFullYear())
+       + String(d.getMonth() + 1).padStart(2, '0')
+       + String(d.getDate()).padStart(2, '0');
 }
 
-// 4. API Vacances
-async function checkVacances() {
-const today = new Date().toISOString().split('T')[0];
-const statusBox = document.getElementById('status-box');
-
-try {
-    const url = `https://data.education.gouv.fr/api/explore/v2.1/catalog/datasets/fr-en-calendrier-scolaire/records?where=location%3D%22Orl%C3%A9ans-Tours%22%20AND%20start_date%20%3C%3D%20%22${today}%22%20AND%20end_date%20%3E%3D%20%22${today}%22&limit=1`;
-    const res = await fetch(url);
-    const data = await res.json();
-
-    if (data.total_count > 0) {
-    statusBox.className = "vacances";
-    statusBox.innerText = "🏖️ Période de Vacances Scolaires";
-    document.getElementById('bus-result').innerHTML = "<b>Profite de tes vacances !</b> Il n'y a pas de bus en circulation durant cette période.";
-    return true;
-    } else {
-    statusBox.className = "scolaire";
-    statusBox.innerText = "🏫 Période Scolaire";
-    return false;
-    }
-} catch (e) {
-    statusBox.className = "scolaire";
-    statusBox.innerText = "🏫 Période Scolaire";
-    return false;
-}
+function hhmm(d) {
+  return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
 }
 
-// 5. Calcul du prochain bus
-function findNextBus(userLat, userLng) {
-const now = new Date();
-const dayOfWeek = now.getDay(); // 0 = Dimanche, 6 = Samedi
-const resultContainer = document.getElementById('bus-result');
-
-// 1. Vérification du Week-end (Samedi = 6, Dimanche = 0)
-if (dayOfWeek === 0 || dayOfWeek === 6) {
-    resultContainer.innerHTML = "<b>C'est le week-end !</b> Les bus Rémi de cette ligne ne circulent pas aujourd'hui.";
-    return;
+/* Un service GTFS circule-t-il à cette date ?
+ * calendar_dates.txt prime sur calendar.txt : une exception ajoute (add) ou
+ * retire (rem) une date, indépendamment du motif hebdomadaire. */
+function serviceActif(serviceId, jour, jourSemaine) {
+  const s = REF.services[serviceId];
+  if (!s) return false;
+  if (s.rem.includes(jour)) return false;
+  if (s.add.includes(jour)) return true;
+  if (jour < s.d1 || jour > s.d2) return false;
+  // s.j est ordonné lundi→dimanche, getDay() renvoie 0 pour dimanche
+  return s.j[(jourSemaine + 6) % 7] === '1';
 }
 
-let arretProche = DATA.arrets[0];
-let distMin = calcDistance(userLat, userLng, DATA.arrets[0].lat, DATA.arrets[0].lng);
-
-for (let i = 1; i < DATA.arrets.length; i++) {
-    let d = calcDistance(userLat, userLng, DATA.arrets[i].lat, DATA.arrets[i].lng);
-    if (d < distMin) {
-    distMin = d;
-    arretProche = DATA.arrets[i];
-    }
+/* Départs réellement assurés à cet arrêt ce jour-là, triés et dédoublonnés.
+ * Un même départ peut être déclaré sous plusieurs service_id (périodes qui se
+ * recouvrent) : on ne le compte qu'une fois. */
+function departsDuJour(arret, date) {
+  const jour = ymd(date), dow = date.getDay();
+  const vus = new Set();
+  return arret.departs
+    .filter(d => serviceActif(d.s, jour, dow))
+    .filter(d => {
+      const cle = d.h + d.l + d.dest;
+      if (vus.has(cle)) return false;
+      vus.add(cle);
+      return true;
+    })
+    .sort((a, b) => a.h.localeCompare(b.h));
 }
 
-const currentHM = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+/* ----------------------------------------------------------------- rendus */
 
-// 2. Filtre : Heure supérieure À MAINTENANT + Le jour actuel doit être dans le tableau "jours"
-const prochain = arretProche.horaires.find(h => {
-    const rouleAujourdhui = !h.jours || h.jours.includes(dayOfWeek);
-    return h.depart >= currentHM && rouleAujourdhui;
-});
-
-if (prochain) {
-    const badgeClass = prochain.ligne === "20a" ? "badge-20a" : "badge-20b";
-    resultContainer.innerHTML = `
-    Le prochain bus <span class="${badgeClass}">Ligne ${prochain.ligne}</span> (${prochain.car}) 
-    part de <b>"${arretProche.nom}"</b> à <b>${prochain.depart}</b> et arrive à <b>"${prochain.dest}"</b> à <b>${prochain.arrivee}</b>.
-    `;
-} else {
-    resultContainer.innerHTML = `Plus aucun bus ne passe aujourd'hui à l'arrêt <b>"${arretProche.nom}"</b>.`;
+function nomArret(a) {
+  return a.commune ? `${a.commune.toUpperCase()} — ${a.nom}` : a.nom;
 }
 
-selectArret(arretProche.id);
+function badge(ligne) {
+  const couleur = (REF.lignes[ligne] && REF.lignes[ligne].couleur) || '#3182ce';
+  return `<span class="badge" style="background:${couleur}">${ligne}</span>`;
 }
+
+function renderTabs() {
+  const tabs = document.getElementById('tabs');
+  if (!tabs) return;
+  tabs.innerHTML = REF.arrets.map(a =>
+    `<button class="tab-btn ${a.id === currentArretId ? 'active' : ''}" data-arret="${a.id}">`
+    + `${nomArret(a)}</button>`
+  ).join('');
+}
+
 function selectArret(arretId) {
-currentArretId = arretId;
-renderTabs();
-filterHoraires();
+  currentArretId = arretId;
+  renderTabs();
+  filterHoraires();
 }
 
 function filterHoraires() {
-const arret = DATA.arrets.find(a => a.id === currentArretId);
-const query = document.getElementById('search-destination').value.toLowerCase().trim();
-const tableContainer = document.getElementById('table-container');
-const dayOfWeek = new Date().getDay();
+  const conteneur = document.getElementById('table-container');
+  if (!REF) return;
+  const arret = REF.arrets.find(a => a.id === currentArretId);
+  if (!arret) return;
 
-const horairesFiltres = arret.horaires.filter(h => {
-    const matchDest = h.dest.toLowerCase().includes(query);
-    const rouleAujourdhui = !h.jours || h.jours.includes(dayOfWeek);
-    return matchDest && rouleAujourdhui;
-});
+  const recherche = (document.getElementById('search-destination').value || '').toLowerCase().trim();
+  const departs = departsDuJour(arret, new Date())
+    .filter(d => d.dest.toLowerCase().includes(recherche));
 
-if (horairesFiltres.length === 0 || dayOfWeek === 0 || dayOfWeek === 6) {
-    tableContainer.innerHTML = `<div class="no-result">Aucun bus ne circule aujourd'hui pour cet arrêt/destination.</div>`;
+  if (departs.length === 0) {
+    conteneur.innerHTML = '<div class="no-result">Aucun départ aujourd\'hui depuis cet arrêt'
+      + (recherche ? ' vers cette destination.' : '.') + '</div>';
     return;
-}
+  }
 
-let html = `
+  conteneur.innerHTML = `
     <table>
-    <thead>
-        <tr>
-        <th>Départ</th>
-        <th>Arrivée</th>
-        <th>Ligne</th>
-        <th>Car</th>
-        <th>Destination</th>
-        </tr>
-    </thead>
-    <tbody>
-`;
-
-horairesFiltres.forEach(h => {
-    const badgeClass = h.ligne === "20a" ? "badge-20a" : "badge-20b";
-    html += `
-    <tr>
-        <td><b>${h.depart}</b></td>
-        <td><b>${h.arrivee}</b></td>
-        <td><span class="${badgeClass}">${h.ligne}</span></td>
-        <td>${h.car}</td>
-        <td>${h.dest}</td>
-    </tr>
-    `;
-});
-
-html += `</tbody></table>`;
-tableContainer.innerHTML = html;
+      <thead>
+        <tr><th>Départ</th><th>Arrivée</th><th>Ligne</th><th>Destination</th></tr>
+      </thead>
+      <tbody>
+        ${departs.map(d => `
+          <tr>
+            <td><b>${d.h}</b></td>
+            <td>${d.arr}</td>
+            <td>${badge(d.l)}</td>
+            <td>${d.dest}</td>
+          </tr>`).join('')}
+      </tbody>
+    </table>`;
 }
 
-// 7. Initialisation & Suivi GPS Continu
-async function init() {
-selectArret(DATA.arrets[0].id);
-const enVacances = await checkVacances();
+/* --------------------------------------------------------------- carte GPS */
 
-if (!enVacances && "geolocation" in navigator) {
-    // Suivi GPS dynamique en direct
+function initCarte() {
+  const el = document.getElementById('map');
+  if (!el || typeof L === 'undefined') return;
+  map = L.map('map').setView([48.0, 2.0], 10);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap'
+  }).addTo(map);
+  REF.arrets.forEach(a => {
+    L.marker([a.lat, a.lng]).addTo(map).bindPopup(`<b>${nomArret(a)}</b>`);
+  });
+}
+
+function calcDistance(lat1, lon1, lat2, lon2) {
+  const R = 6371;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = Math.sin(dLat / 2) ** 2
+          + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+function findNextBus(userLat, userLng) {
+  const resultat = document.getElementById('bus-result');
+  const now = new Date();
+
+  let arretProche = REF.arrets[0];
+  let distMin = Infinity;
+  REF.arrets.forEach(a => {
+    const d = calcDistance(userLat, userLng, a.lat, a.lng);
+    if (d < distMin) { distMin = d; arretProche = a; }
+  });
+
+  const maintenant = hhmm(now);
+  const prochain = departsDuJour(arretProche, now).find(d => d.h >= maintenant);
+
+  if (prochain) {
+    resultat.innerHTML = `Prochain départ ${badge(prochain.l)} de `
+      + `<b>${nomArret(arretProche)}</b> à <b>${prochain.h}</b>, `
+      + `arrivée à <b>${prochain.dest}</b> à <b>${prochain.arr}</b>.`
+      + `<br><small>Arrêt à ${distMin.toFixed(1)} km de vous.</small>`;
+  } else {
+    resultat.innerHTML = `Plus aucun départ aujourd'hui depuis <b>${nomArret(arretProche)}</b>.`;
+  }
+
+  selectArret(arretProche.id);
+}
+
+/* ------------------------------------------------------- bandeau vacances */
+
+/* Purement informatif : la circulation réelle vient des calendriers GTFS,
+ * qui distinguent déjà période scolaire, mercredi, samedi et vacances. */
+async function afficherPeriode() {
+  const box = document.getElementById('status-box');
+  const jour = new Date().toISOString().split('T')[0];
+  const url = CONFIG.vacances + '?limit=1&where='
+    + encodeURIComponent(`location="Orléans-Tours" and start_date<="${jour}" and end_date>="${jour}"`);
+  try {
+    const res = await fetch(url);
+    const data = await res.json();
+    const enVacances = data.total_count > 0;
+    box.className = enVacances ? 'vacances' : 'scolaire';
+    box.innerText = enVacances
+      ? '🏖️ Vacances scolaires — offre réduite'
+      : '🏫 Période scolaire';
+  } catch (e) {
+    box.className = 'scolaire';
+    box.innerText = 'Calendrier scolaire indisponible';
+  }
+}
+
+/* Complète le JSON avec les libellés et couleurs à jour du référentiel régional.
+ * Échec sans conséquence : les valeurs figées dans horaires.json prennent le relais. */
+async function rafraichirLignes() {
+  try {
+    const res = await fetch(CONFIG.lignes);
+    const data = await res.json();
+    data.results.forEach(r => {
+      REF.lignes[r.route_short_name] = {
+        route_id: r.route_id,
+        nom: r.route_long_name,
+        couleur: '#' + (r.route_color || '3182ce').replace('#', '')
+      };
+    });
+  } catch (e) {
+    /* on garde ce qui est dans horaires.json */
+  }
+}
+
+/* --------------------------------------------------------------- démarrage */
+
+function brancherEvenements() {
+  document.getElementById('tabs').addEventListener('click', e => {
+    const btn = e.target.closest('[data-arret]');
+    if (btn) selectArret(btn.dataset.arret);
+  });
+  document.getElementById('search-destination')
+    .addEventListener('input', filterHoraires);
+}
+
+async function init() {
+  if (new URLSearchParams(window.location.search).get('mode') === 'widget') {
+    document.body.classList.add('widget-mode');
+  }
+
+  const resultat = document.getElementById('bus-result');
+
+  try {
+    const res = await fetch(CONFIG.horaires, { cache: 'no-cache' });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    REF = await res.json();
+  } catch (e) {
+    const box = document.getElementById('status-box');
+    box.className = 'error';
+    box.innerText = 'Horaires indisponibles';
+    resultat.innerHTML = `Impossible de charger <code>${CONFIG.horaires}</code> (${e.message}). `
+      + 'Relancez <code>build-horaires.py</code> puis publiez le fichier généré.';
+    return;
+  }
+
+  await rafraichirLignes();
+
+  const defaut = REF.arrets.find(a => a.commune === CONFIG.arretParDefaut) || REF.arrets[0];
+  currentArretId = defaut.id;
+
+  brancherEvenements();
+  initCarte();
+  selectArret(defaut.id);
+  afficherPeriode();
+
+  const prochain = departsDuJour(defaut, new Date()).find(d => d.h >= hhmm(new Date()));
+  resultat.innerHTML = prochain
+    ? `Prochain départ ${badge(prochain.l)} de <b>${nomArret(defaut)}</b> à <b>${prochain.h}</b>.`
+      + '<br><small>Activez la géolocalisation pour l\'arrêt le plus proche.</small>'
+    : 'Recherche de l\'arrêt le plus proche…';
+
+  if ('geolocation' in navigator) {
     navigator.geolocation.watchPosition(
-    (pos) => {
-        const uLat = pos.coords.latitude;
-        const uLng = pos.coords.longitude;
-        
-        if (userMarker) {
-        userMarker.setLatLng([uLat, uLng]);
-        } else {
-        userMarker = L.circleMarker([uLat, uLng], {color: 'red', radius: 8}).addTo(map).bindPopup("Vous êtes ici");
+      pos => {
+        const la = pos.coords.latitude, lo = pos.coords.longitude;
+        if (map) {
+          if (userMarker) userMarker.setLatLng([la, lo]);
+          else userMarker = L.circleMarker([la, lo], { color: 'red', radius: 8 })
+                             .addTo(map).bindPopup('Vous êtes ici');
+          map.setView([la, lo], 12);
         }
-        
-        map.setView([uLat, uLng], 12);
-        findNextBus(uLat, uLng);
-    },
-    (err) => {
-        document.getElementById('bus-result').innerText = "Activez la géolocalisation pour calculer l'arrêt le plus proche.";
-    },
-    { enableHighAccuracy: true, maximumAge: 10000, timeout: 5000 }
+        findNextBus(la, lo);
+      },
+      () => {
+        resultat.innerHTML += '<br><small>Géolocalisation refusée : arrêt par défaut affiché.</small>';
+      },
+      { enableHighAccuracy: true, maximumAge: 10000, timeout: 5000 }
     );
 
-    // Actualisation du calcul toutes les minutes
     setInterval(() => {
-    navigator.geolocation.getCurrentPosition((pos) => {
-        findNextBus(pos.coords.latitude, pos.coords.longitude);
-    });
+      navigator.geolocation.getCurrentPosition(p =>
+        findNextBus(p.coords.latitude, p.coords.longitude));
     }, 60000);
-}
+  }
 }
 
 init();

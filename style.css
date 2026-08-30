@@ -37,8 +37,15 @@
       border-radius: 8px;
     }
 
-    .badge-20a { background: #3182ce; color: white; padding: 2px 8px; border-radius: 4px; font-weight: bold; font-size: 0.85rem; }
-    .badge-20b { background: #38a169; color: white; padding: 2px 8px; border-radius: 4px; font-weight: bold; font-size: 0.85rem; }
+    /* La couleur vient du référentiel régional (route_color), appliquée en inline. */
+    .badge {
+      color: white;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-weight: bold;
+      font-size: 0.85rem;
+      white-space: nowrap;
+    }
 
     #map {
       height: 250px;
@@ -65,6 +72,9 @@
       white-space: nowrap;
       cursor: pointer;
       color: #4a5568;
+      max-width: 220px;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
     .tab-btn.active {
       background: #3182ce;
@@ -108,3 +118,23 @@
       font-style: italic;
       text-align: center;
     }
+
+    /* --- MODE WIDGET (masque la carte et la grille) --- */
+    body.widget-mode #map,
+    body.widget-mode #card-horaires {
+      display: none;
+    }
+    body.widget-mode {
+      background: transparent;
+      padding: 0;
+    }
+    body.widget-mode .card:first-of-type {
+      margin-bottom: 0;
+    }
+    .source {
+      margin-top: 14px;
+      font-size: 0.75rem;
+      color: #718096;
+      line-height: 1.4;
+    }
+    .source a { color: #3182ce; }
