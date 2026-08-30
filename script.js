@@ -108,7 +108,7 @@ arrets: [
         {depart: "18:15", arrivee: "18:50", ligne: "20a", car: "Car 19", dest: "ORLÉANS Gare Routière"}
     ]
     },
-    
+
     {
     id: "neuville_rive",
     nom: "NEUVILLE - Rive du Bois",
