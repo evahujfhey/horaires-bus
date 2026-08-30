@@ -34,22 +34,17 @@ function hhmm(d) {
   return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
 }
 
-/* Un service GTFS circule-t-il à cette date ?
- * calendar_dates.txt prime sur calendar.txt : une exception ajoute (add) ou
- * retire (rem) une date, indépendamment du motif hebdomadaire. */
+/* Un service GTFS circule-t-il à cette date ? */
 function serviceActif(serviceId, jour, jourSemaine) {
   const s = REF.services[serviceId];
   if (!s) return false;
   if (s.rem.includes(jour)) return false;
   if (s.add.includes(jour)) return true;
   if (jour < s.d1 || jour > s.d2) return false;
-  // s.j est ordonné lundi→dimanche, getDay() renvoie 0 pour dimanche
   return s.j[(jourSemaine + 6) % 7] === '1';
 }
 
-/* Départs réellement assurés à cet arrêt ce jour-là, triés et dédoublonnés.
- * Un même départ peut être déclaré sous plusieurs service_id (périodes qui se
- * recouvrent) : on ne le compte qu'une fois. */
+/* Départs réellement assurés à cet arrêt ce jour-là, triés et dédoublonnés. */
 function departsDuJour(arret, date) {
   const jour = ymd(date), dow = date.getDay();
   const vus = new Set();
@@ -176,8 +171,6 @@ function findNextBus(userLat, userLng) {
 
 /* ------------------------------------------------------- bandeau vacances */
 
-/* Purement informatif : la circulation réelle vient des calendriers GTFS,
- * qui distinguent déjà période scolaire, mercredi, samedi et vacances. */
 async function afficherPeriode() {
   const box = document.getElementById('status-box');
   const jour = new Date().toISOString().split('T')[0];
@@ -197,8 +190,6 @@ async function afficherPeriode() {
   }
 }
 
-/* Complète le JSON avec les libellés et couleurs à jour du référentiel régional.
- * Échec sans conséquence : les valeurs figées dans horaires.json prennent le relais. */
 async function rafraichirLignes() {
   try {
     const res = await fetch(CONFIG.lignes);
@@ -210,9 +201,7 @@ async function rafraichirLignes() {
         couleur: '#' + (r.route_color || '3182ce').replace('#', '')
       };
     });
-  } catch (e) {
-    /* on garde ce qui est dans horaires.json */
-  }
+  } catch (e) {}
 }
 
 /* --------------------------------------------------------------- démarrage */
@@ -254,19 +243,24 @@ async function init() {
     return;
   }
 
-  // --- FILTRAGE DES ARRÊTS (Orléans, Loury, Neuville-aux-Bois) ---
+  // --- FILTRAGE DES ARRÊTS (Inclusions et Exclusions) ---
   const communesAutorisees = ['orleans', 'loury', 'neuville aux bois'];
+  const motsExclus = ['charmettes', 'cimetiere', 'college']; // Les arrêts à supprimer
+
   if (REF && REF.arrets) {
     REF.arrets = REF.arrets.filter(a => {
       const cNorm = normaliserChaine(a.commune);
       const nomNorm = normaliserChaine(a.nom);
-      return communesAutorisees.some(target => cNorm.includes(target) || nomNorm.includes(target));
+      
+      const dansCommune = communesAutorisees.some(target => cNorm.includes(target) || nomNorm.includes(target));
+      const estExclu = motsExclus.some(exclu => nomNorm.includes(exclu));
+      
+      return dansCommune && !estExclu;
     });
   }
 
   await rafraichirLignes();
 
-  // On sécurise le choix par défaut au cas où "Neuville-aux-Bois" ne matcherait pas parfaitement
   const defaut = (REF.arrets && REF.arrets.find(a => normaliserChaine(a.commune).includes('neuville aux bois'))) 
                 || (REF.arrets && REF.arrets[0]);
   

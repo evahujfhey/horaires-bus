@@ -1,15 +1,6 @@
 #!/usr/bin/env python3
 """
 Génère data/horaires.json pour les lignes Rémi 20A et 20B à partir du GTFS ouvert.
-
-Le GTFS (14 Mo compressés, 130 Mo décompressés) n'est pas servi avec d'en-tête CORS :
-un navigateur ne peut pas le télécharger depuis GitHub Pages. On le convertit donc
-ici, hors ligne, en un JSON compact que la page consomme ensuite.
-
-À relancer à chaque nouvelle version du GTFS (validité indiquée dans le fichier généré).
-
-    python3 build-horaires.py            # télécharge le GTFS et génère data/horaires.json
-    python3 build-horaires.py --zip REMI.zip
 """
 
 import argparse
@@ -42,7 +33,6 @@ def lire(zf, nom):
 
 
 def communes(stop_ids):
-    """Le GTFS ne porte pas la commune : on la récupère sur l'API régionale."""
     out = {}
     ids = list(stop_ids)
     for i in range(0, len(ids), 20):
@@ -53,13 +43,12 @@ def communes(stop_ids):
             with urllib.request.urlopen(url, timeout=30) as r:
                 for rec in json.load(r)["results"]:
                     out[rec["stop_id"]] = rec["commune"]
-        except Exception as e:  # l'API peut être indisponible : la commune est facultative
+        except Exception as e:
             print(f"  commune indisponible pour un lot ({e})", file=sys.stderr)
     return out
 
 
 def couleurs():
-    """Couleurs et libellés officiels des lignes, via l'API régionale."""
     where = urllib.parse.quote('route_short_name in ("20A","20B")')
     url = f"{ODS}/jvmalin_lignes/records?limit=10&where={where}"
     out = {}
@@ -120,13 +109,13 @@ def main():
         v.sort(key=lambda x: int(x["stop_sequence"]))
     print(f"  {sum(len(v) for v in passages.values())} passages")
 
-    # --- calendriers, restreints aux services réellement utilisés
+    # --- calendriers
     utilises = {t["service_id"] for t in trips.values()}
     services = {}
     for r in lire(zf, "calendar.txt"):
         if r["service_id"] in utilises:
             services[r["service_id"]] = {
-                "j": "".join(r[j] for j in JOURS),   # ex. "1111100" = lundi→vendredi
+                "j": "".join(r[j] for j in JOURS), 
                 "d1": r["start_date"],
                 "d2": r["end_date"],
                 "add": [],
@@ -141,14 +130,14 @@ def main():
         s["add" if r["exception_type"] == "1" else "rem"].append(r["date"])
     print(f"  {len(services)} services (calendriers)")
 
-    # --- regroupement par arrêt logique (parent_station) : le GTFS a un stop_id par sens
+    # --- regroupement
     arrets = {}
     for tid, seq in passages.items():
         t = trips[tid]
         ligne = LIGNES[t["route_id"].strip('"')]
         terminus = seq[-1]
         dest = t["trip_headsign"] or stops[terminus["stop_id"]]["stop_name"]
-        for p in seq[:-1]:                       # le terminus n'est pas un départ
+        for p in seq[:-1]:
             st = stops[p["stop_id"]]
             aid = st["parent_station"] or p["stop_id"]
             a = arrets.setdefault(aid, {
@@ -166,7 +155,7 @@ def main():
                 "s": t["service_id"],
             })
 
-    # dédoublonnage : les deux quais d'un même arrêt logique peuvent porter le même départ
+    # dédoublonnage
     for a in arrets.values():
         vus, uniques = set(), []
         for d in sorted(a["departs"], key=lambda d: (d["h"], d["l"], d["dest"])):
@@ -176,7 +165,6 @@ def main():
                 uniques.append(d)
         a["departs"] = uniques
 
-    # --- commune, via l'API régionale (jointure sur stop_id)
     print("Récupération des communes…")
     quais = {sid for tid in passages for sid in (p["stop_id"] for p in passages[tid])}
     com = communes(quais)
@@ -187,11 +175,14 @@ def main():
                 break
         a.setdefault("commune", "")
 
-    # --- FILTRAGE DES ARRÊTS (Orléans, Loury, Neuville-aux-Bois) ---
+    # --- FILTRAGE DES ARRÊTS (Inclusions et Exclusions) ---
     COMMUNES_AUTORISEES = {"orleans", "loury", "neuville aux bois"}
+    MOTS_EXCLUS = {"charmettes", "cimetiere", "college"} # Les arrêts à supprimer
+
     arrets_filtres = {
         aid: a for aid, a in arrets.items()
         if any(target in normaliser(a.get("commune", "")) or target in normaliser(a.get("nom", "")) for target in COMMUNES_AUTORISEES)
+        and not any(exclu in normaliser(a.get("nom", "")) for exclu in MOTS_EXCLUS)
     }
 
     doc = {
