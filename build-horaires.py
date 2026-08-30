@@ -177,7 +177,7 @@ def main():
 
     # --- FILTRAGE DES ARRÊTS (Inclusions et Exclusions) ---
     COMMUNES_AUTORISEES = {"orleans", "loury", "neuville aux bois"}
-    MOTS_EXCLUS = {"charmettes", "cimetiere", "college"} # Les arrêts à supprimer
+    MOTS_EXCLUS = {"charmettes", "cimetiere", "college", "pichardiere"} # Ajout de et pichardiere
 
     arrets_filtres = {
         aid: a for aid, a in arrets.items()

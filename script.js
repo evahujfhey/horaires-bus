@@ -16,14 +16,13 @@ const CONFIG = {
   arretParDefaut: 'Neuville-aux-Bois'
 };
 
-let REF = null;            // contenu de horaires.json
+let REF = null;            
 let currentArretId = null;
 let map = null;
 let userMarker = null;
 
 /* ------------------------------------------------------------------ dates */
 
-// "20260907" — format des calendriers GTFS
 function ymd(d) {
   return String(d.getFullYear())
        + String(d.getMonth() + 1).padStart(2, '0')
@@ -34,7 +33,6 @@ function hhmm(d) {
   return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
 }
 
-/* Un service GTFS circule-t-il à cette date ? */
 function serviceActif(serviceId, jour, jourSemaine) {
   const s = REF.services[serviceId];
   if (!s) return false;
@@ -44,7 +42,6 @@ function serviceActif(serviceId, jour, jourSemaine) {
   return s.j[(jourSemaine + 6) % 7] === '1';
 }
 
-/* Départs réellement assurés à cet arrêt ce jour-là, triés et dédoublonnés. */
 function departsDuJour(arret, date) {
   const jour = ymd(date), dow = date.getDay();
   const vus = new Set();
@@ -245,7 +242,7 @@ async function init() {
 
   // --- FILTRAGE DES ARRÊTS (Inclusions et Exclusions) ---
   const communesAutorisees = ['orleans', 'loury', 'neuville aux bois'];
-  const motsExclus = ['charmettes', 'cimetiere', 'college']; // Les arrêts à supprimer
+  const motsExclus = ['charmettes', 'cimetiere', 'college', 'pichardiere']; // Ajout de stade et pichardiere
 
   if (REF && REF.arrets) {
     REF.arrets = REF.arrets.filter(a => {
