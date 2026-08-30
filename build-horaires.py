@@ -32,6 +32,8 @@ LIGNES = {
     "REMI45:Line:560": "20B",
 }
 
+COMMUNES_AUTORISEES = {"NEUVILLE-AUX-BOIS", "LOURY", "ORLEANS"}
+
 JOURS = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]
 
 
@@ -178,12 +180,18 @@ def main():
                 break
         a.setdefault("commune", "")
 
+    # --- filtrage : conservation exclusive des communes d'intérêt
+    arrets_filtres = [
+        a for a in arrets.values()
+        if a.get("commune", "").upper() in COMMUNES_AUTORISEES
+    ]
+
     doc = {
         "genere_le": date.today().isoformat(),
         "source": "GTFS Rémi — transport.data.gouv.fr (ODbL)",
         "lignes": couleurs() or {n: {"nom": n, "couleur": "#3182ce"} for n in LIGNES.values()},
         "services": services,
-        "arrets": sorted(arrets.values(), key=lambda a: (a.get("commune", ""), a["nom"])),
+        "arrets": sorted(arrets_filtres, key=lambda a: (a.get("commune", ""), a["nom"])),
     }
 
     os.makedirs(os.path.dirname(args.out) or ".", exist_ok=True)

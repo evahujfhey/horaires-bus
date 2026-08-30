@@ -150,6 +150,8 @@ function findNextBus(userLat, userLng) {
   const resultat = document.getElementById('bus-result');
   const now = new Date();
 
+  if (!REF || !REF.arrets || REF.arrets.length === 0) return;
+
   let arretProche = REF.arrets[0];
   let distMin = Infinity;
   REF.arrets.forEach(a => {
@@ -247,18 +249,24 @@ async function init() {
   await rafraichirLignes();
 
   const defaut = REF.arrets.find(a => a.commune === CONFIG.arretParDefaut) || REF.arrets[0];
-  currentArretId = defaut.id;
+  if (defaut) {
+    currentArretId = defaut.id;
+  }
 
   brancherEvenements();
   initCarte();
-  selectArret(defaut.id);
+  if (defaut) {
+    selectArret(defaut.id);
+  }
   afficherPeriode();
 
-  const prochain = departsDuJour(defaut, new Date()).find(d => d.h >= hhmm(new Date()));
-  resultat.innerHTML = prochain
-    ? `Prochain départ ${badge(prochain.l)} de <b>${nomArret(defaut)}</b> à <b>${prochain.h}</b>.`
-      + '<br><small>Activez la géolocalisation pour l\'arrêt le plus proche.</small>'
-    : 'Recherche de l\'arrêt le plus proche…';
+  if (defaut) {
+    const prochain = departsDuJour(defaut, new Date()).find(d => d.h >= hhmm(new Date()));
+    resultat.innerHTML = prochain
+      ? `Prochain départ ${badge(prochain.l)} de <b>${nomArret(defaut)}</b> à <b>${prochain.h}</b>.`
+        + '<br><small>Activez la géolocalisation pour l\'arrêt le plus proche.</small>'
+      : 'Recherche de l\'arrêt le plus proche…';
+  }
 
   if ('geolocation' in navigator) {
     navigator.geolocation.watchPosition(
