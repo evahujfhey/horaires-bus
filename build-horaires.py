@@ -216,7 +216,7 @@ def main():
 
     os.makedirs(os.path.dirname(args.out) or ".", exist_ok=True)
     with open(args.out, "w", encoding="utf-8") as f:
-        json.dump(doc, f, ensure_ascii=False, separators=",")
+        json.dump(doc, f, ensure_ascii=False, separators=(",", ":"))
 
     total = sum(len(a["departs"]) for a in doc["arrets"])
     print(f"\n{args.out} : {len(doc['arrets'])} arrêts conservés sur {len(arrets_bruts)}, {total} départs, "
