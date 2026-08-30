@@ -6,7 +6,7 @@ function renderTabs() {
   let html = '';
   DATA.arrets.forEach(arret => {
     const activeClass = arret.id === currentArretId ? 'active' : '';
-    html += `<button class="tab ${activeClass}" onclick="selectArret('${arret.id}')">${arret.nom}</button>`;
+    html += `<button class="tab-btn ${activeClass}" onclick="selectArret('${arret.id}')">${arret.nom}</button>`;
   });
   tabsContainer.innerHTML = html;
 }
@@ -108,7 +108,6 @@ arrets: [
         {depart: "18:15", arrivee: "18:50", ligne: "20a", car: "Car 19", dest: "ORLÉANS Gare Routière"}
     ]
     },
-
     {
     id: "neuville_rive",
     nom: "NEUVILLE - Rive du Bois",
@@ -124,6 +123,12 @@ arrets: [
     }
 ]
 };
+
+// 1bis. Tri des horaires par heure de départ.
+// findNextBus() et filterHoraires() parcourent le tableau dans l'ordre :
+// sans ce tri, le "prochain bus" renvoyé est le premier de la liste, pas le plus proche.
+DATA.arrets.forEach(a => a.horaires.sort((x, y) => x.depart.localeCompare(y.depart)));
+
 
 // 2. Initialisation Carte
 const map = L.map('map').setView([48.0000, 2.0000], 10);

@@ -1,3 +1,5 @@
+/* Feuille de style - Horaires Rémi 45 */
+
     * { box-sizing: border-box; font-family: 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 0; }
     body { background-color: #f4f6f9; padding: 16px; color: #333; }
     
@@ -105,17 +107,4 @@
       color: #718096;
       font-style: italic;
       text-align: center;
-    }
-
-    /* --- MODE WIDGET (masque la carte et la grille) --- */
-    body.widget-mode #map,
-    body.widget-mode .card:nth-of-type(2) {
-      display: none;
-    }
-    body.widget-mode {
-      background: transparent;
-      padding: 0;
-    }
-    body.widget-mode .card:first-of-type {
-      margin-bottom: 0;
     }
