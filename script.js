@@ -1,11 +1,11 @@
 /* Horaires Rémi 45 — lignes 20A et 20B
  *
  * Sources de données (aucune clé d'API) :
- *   - data/horaires.json  : arrêts, départs et calendriers, extraits du GTFS ouvert
- *                           par build-horaires.py (le GTFS lui-même n'a pas d'en-tête
- *                           CORS, un navigateur ne peut donc pas le lire directement)
- *   - data.centrevaldeloire.fr : libellés et couleurs officiels des lignes
- *   - data.education.gouv.fr   : calendrier scolaire de la zone Orléans-Tours
+ * - data/horaires.json  : arrêts, départs et calendriers, extraits du GTFS ouvert
+ * par build-horaires.py (le GTFS lui-même n'a pas d'en-tête
+ * CORS, un navigateur ne peut donc pas le lire directement)
+ * - data.centrevaldeloire.fr : libellés et couleurs officiels des lignes
+ * - data.education.gouv.fr   : calendrier scolaire de la zone Orléans-Tours
  */
 
 const CONFIG = {
@@ -226,6 +226,14 @@ function brancherEvenements() {
     .addEventListener('input', filterHoraires);
 }
 
+function normaliserChaine(str) {
+  return (str || '')
+    .toLowerCase()
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+    .replace(/-/g, ' ')
+    .trim();
+}
+
 async function init() {
   if (new URLSearchParams(window.location.search).get('mode') === 'widget') {
     document.body.classList.add('widget-mode');
@@ -246,29 +254,41 @@ async function init() {
     return;
   }
 
+  // --- FILTRAGE DES ARRÊTS (Orléans, Loury, Neuville-aux-Bois) ---
+  const communesAutorisees = ['orleans', 'loury', 'neuville aux bois'];
+  if (REF && REF.arrets) {
+    REF.arrets = REF.arrets.filter(a => {
+      const cNorm = normaliserChaine(a.commune);
+      const nomNorm = normaliserChaine(a.nom);
+      return communesAutorisees.some(target => cNorm.includes(target) || nomNorm.includes(target));
+    });
+  }
+
   await rafraichirLignes();
 
-  const defaut = REF.arrets.find(a => a.commune === CONFIG.arretParDefaut) || REF.arrets[0];
-  if (defaut) {
-    currentArretId = defaut.id;
+  // On sécurise le choix par défaut au cas où "Neuville-aux-Bois" ne matcherait pas parfaitement
+  const defaut = (REF.arrets && REF.arrets.find(a => normaliserChaine(a.commune).includes('neuville aux bois'))) 
+                || (REF.arrets && REF.arrets[0]);
+  
+  if (!defaut) {
+    resultat.innerHTML = 'Aucun arrêt disponible dans ces communes.';
+    return;
   }
+
+  currentArretId = defaut.id;
 
   brancherEvenements();
   initCarte();
-  if (defaut) {
-    selectArret(defaut.id);
-  }
+  selectArret(defaut.id);
   afficherPeriode();
 
-  if (defaut) {
-    const prochain = departsDuJour(defaut, new Date()).find(d => d.h >= hhmm(new Date()));
-    resultat.innerHTML = prochain
-      ? `Prochain départ ${badge(prochain.l)} de <b>${nomArret(defaut)}</b> à <b>${prochain.h}</b>.`
-        + '<br><small>Activez la géolocalisation pour l\'arrêt le plus proche.</small>'
-      : 'Recherche de l\'arrêt le plus proche…';
-  }
+  const prochain = departsDuJour(defaut, new Date()).find(d => d.h >= hhmm(new Date()));
+  resultat.innerHTML = prochain
+    ? `Prochain départ ${badge(prochain.l)} de <b>${nomArret(defaut)}</b> à <b>${prochain.h}</b>.`
+      + '<br><small>Activez la géolocalisation pour l\'arrêt le plus proche.</small>'
+    : `Plus aucun départ aujourd'hui depuis <b>${nomArret(defaut)}</b>.`;
 
-  if ('geolocation' in navigator) {
+  if ('geolocation' in navigator && REF.arrets && REF.arrets.length > 0) {
     navigator.geolocation.watchPosition(
       pos => {
         const la = pos.coords.latitude, lo = pos.coords.longitude;

@@ -18,6 +18,7 @@ import io
 import json
 import os
 import sys
+import unicodedata
 import urllib.parse
 import urllib.request
 import zipfile
@@ -31,8 +32,6 @@ LIGNES = {
     "REMI45:Line:17": "20A",
     "REMI45:Line:560": "20B",
 }
-
-COMMUNES_AUTORISEES = {"NEUVILLE-AUX-BOIS", "LOURY", "ORLEANS"}
 
 JOURS = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]
 
@@ -75,6 +74,14 @@ def couleurs():
     except Exception as e:
         print(f"  couleurs indisponibles ({e})", file=sys.stderr)
     return out
+
+
+def normaliser(s):
+    if not s:
+        return ""
+    s = s.lower().replace("-", " ")
+    s = unicodedata.normalize('NFD', s)
+    return ''.join(c for c in s if unicodedata.category(c) != 'Mn')
 
 
 def main():
@@ -180,18 +187,19 @@ def main():
                 break
         a.setdefault("commune", "")
 
-    # --- filtrage : conservation exclusive des communes d'intérêt
-    arrets_filtres = [
-        a for a in arrets.values()
-        if a.get("commune", "").upper() in COMMUNES_AUTORISEES
-    ]
+    # --- FILTRAGE DES ARRÊTS (Orléans, Loury, Neuville-aux-Bois) ---
+    COMMUNES_AUTORISEES = {"orleans", "loury", "neuville aux bois"}
+    arrets_filtres = {
+        aid: a for aid, a in arrets.items()
+        if any(target in normaliser(a.get("commune", "")) or target in normaliser(a.get("nom", "")) for target in COMMUNES_AUTORISEES)
+    }
 
     doc = {
         "genere_le": date.today().isoformat(),
         "source": "GTFS Rémi — transport.data.gouv.fr (ODbL)",
         "lignes": couleurs() or {n: {"nom": n, "couleur": "#3182ce"} for n in LIGNES.values()},
         "services": services,
-        "arrets": sorted(arrets_filtres, key=lambda a: (a.get("commune", ""), a["nom"])),
+        "arrets": sorted(arrets_filtres.values(), key=lambda a: (a.get("commune", ""), a["nom"])),
     }
 
     os.makedirs(os.path.dirname(args.out) or ".", exist_ok=True)
@@ -199,9 +207,8 @@ def main():
         json.dump(doc, f, ensure_ascii=False, separators=(",", ":"))
 
     total = sum(len(a["departs"]) for a in doc["arrets"])
-    print(f"\n{args.out} : {len(doc['arrets'])} arrêts, {total} départs, "
+    print(f"\n{args.out} : {len(doc['arrets'])} arrêts conservés sur {len(arrets)}, {total} départs, "
           f"{os.path.getsize(args.out) / 1024:.0f} Ko")
-
 
 if __name__ == "__main__":
     main()
