@@ -333,3 +333,33 @@ body.widget-mode .card:first-of-type { margin-bottom: 0; }
     padding: 6px 14px;
   }
 }
+
+/* -------------------------------------------------------------------------
+   Bouton de recentrage de la carte
+------------------------------------------------------------------------- */
+.map-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.recenter-btn {
+  display: none; /* Masqué par défaut */
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  z-index: 1000; /* Permet de passer par-dessus la carte Leaflet */
+  background: var(--bg-card);
+  color: var(--primary);
+  border: 1px solid var(--border);
+  padding: 8px 12px;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  font-size: 0.9rem;
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.recenter-btn:hover {
+  background: #f1f5f9;
+}

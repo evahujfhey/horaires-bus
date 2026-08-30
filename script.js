@@ -12,6 +12,8 @@ let REF = null;
 let currentArretId = null;
 let map = null;
 let userMarker = null;
+let mapCenteredOnce = false; 
+let lastClosestStop = null;
 
 /* ------------------------------------------------------------------ dates */
 
@@ -119,6 +121,12 @@ function initCarte() {
     L.marker([a.lat, a.lng]).addTo(map).bindPopup(`<b>${nomArret(a)}</b>`);
   });
 
+  // Fait apparaître le bouton dès que l'utilisateur déplace la carte manuellement
+  map.on('dragstart', () => {
+    const btn = document.getElementById('recenter-btn');
+    if (btn) btn.style.display = 'block';
+  });
+
   window.addEventListener('resize', () => {
     if (map) map.invalidateSize();
   });
@@ -146,6 +154,14 @@ function findNextBus(userLat, userLng) {
     if (d < distMin) { distMin = d; arretProche = a; }
   });
 
+  lastClosestStop = arretProche; // Sauvegarde l'arrêt pour le bouton "Recentrer"
+
+  // Centre la carte sur l'arrêt le plus proche uniquement au premier chargement GPS
+  if (map && !mapCenteredOnce) {
+    map.setView([arretProche.lat, arretProche.lng], 14);
+    mapCenteredOnce = true;
+  }
+
   const maintenant = hhmm(now);
   const prochain = departsDuJour(arretProche, now).find(d => d.h >= maintenant);
 
@@ -157,8 +173,6 @@ function findNextBus(userLat, userLng) {
   } else {
     resultat.innerHTML = `Plus aucun départ aujourd'hui depuis <b>${nomArret(arretProche)}</b>.`;
   }
-
-  selectArret(arretProche.id);
 }
 
 /* ------------------------------------------------------- bandeau vacances */
@@ -201,8 +215,20 @@ function brancherEvenements() {
     const btn = e.target.closest('[data-arret]');
     if (btn) selectArret(btn.dataset.arret);
   });
+  
   document.getElementById('search-destination')
     .addEventListener('input', filterHoraires);
+    
+  // Connexion du bouton de recentrage
+  const btnRecenter = document.getElementById('recenter-btn');
+  if (btnRecenter) {
+    btnRecenter.addEventListener('click', () => {
+      if (map && lastClosestStop) {
+        map.setView([lastClosestStop.lat, lastClosestStop.lng], 14);
+        btnRecenter.style.display = 'none'; // Masque le bouton après le clic
+      }
+    });
+  }
 }
 
 function normaliserChaine(str) {
@@ -279,7 +305,6 @@ async function init() {
           if (userMarker) userMarker.setLatLng([la, lo]);
           else userMarker = L.circleMarker([la, lo], { color: '#3b82f6', radius: 8, fillOpacity: 0.8 })
                              .addTo(map).bindPopup('Votre position');
-          map.setView([la, lo], 12);
         }
         findNextBus(la, lo);
       },
