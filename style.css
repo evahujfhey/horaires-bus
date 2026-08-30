@@ -249,6 +249,22 @@ body.widget-mode .card:first-of-type { margin-bottom: 0; }
     font-size: 1.85rem;
   }
 
+/* Agrandissement spécifique : Badge statut (Vacances/Scolaire) */
+  #status-box {
+    font-size: 1.1rem;
+    padding: 10px 20px;
+    letter-spacing: 1px;
+  }
+
+  .container {
+    max-width: 1500px;
+    display: grid;
+    grid-template-columns: 520px 1fr;
+    gap: 36px;
+    align-items: start;
+    padding: 0 24px;
+  }
+
   .container {
     max-width: 1500px;
     display: grid;
