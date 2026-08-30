@@ -237,22 +237,23 @@ body.widget-mode .card:first-of-type { margin-bottom: 0; }
 
 /* -------------------------------------------------------------------------
    MEDIA QUERY : ORDINATEUR & GRANDS ÉCRANS (>= 900px)
+   Version corrigée : Élargissement global, carte plus grande, tableau espacé
 ------------------------------------------------------------------------- */
 @media (min-width: 900px) {
   .app-header {
-    max-width: 1400px;
+    max-width: 1500px;
     padding: 32px 24px 24px;
   }
   
   .app-header h1 {
-    font-size: 1.75rem;
+    font-size: 1.85rem;
   }
 
   .container {
-    max-width: 1400px;
+    max-width: 1500px;
     display: grid;
-    grid-template-columns: 440px 1fr;
-    gap: 28px;
+    grid-template-columns: 520px 1fr; /* Colonne gauche agrandie */
+    gap: 36px;
     align-items: start;
     padding: 0 24px;
   }
@@ -264,12 +265,25 @@ body.widget-mode .card:first-of-type { margin-bottom: 0; }
   }
 
   .card {
-    padding: 24px;
-    margin-bottom: 24px;
+    padding: 32px;
+    margin-bottom: 28px;
   }
 
+  /* Agrandissement spécifique : Carte prochain passage */
+  .highlight-card h2 {
+    font-size: 1.4rem;
+    margin-bottom: 20px;
+  }
+
+  .bus-info {
+    font-size: 1.15rem;
+    padding: 24px;
+    line-height: 1.7;
+  }
+
+  /* Agrandissement spécifique : Carte Leaflet */
   .map-container {
-    height: 480px;
+    height: 600px; /* Plan considérablement agrandi */
     margin-bottom: 0;
   }
 
@@ -280,18 +294,35 @@ body.widget-mode .card:first-of-type { margin-bottom: 0; }
   .tabs-container {
     flex-wrap: wrap;
     overflow-x: visible;
+    gap: 12px;
+    padding-bottom: 16px;
   }
 
+  .tab-btn {
+    font-size: 1rem;
+    padding: 12px 20px;
+  }
+
+  /* Agrandissement spécifique : Tableau des horaires */
   .schedule-item {
-    grid-template-columns: 110px 70px 1fr;
-    padding: 18px 24px;
+    grid-template-columns: 130px 80px 1fr;
+    padding: 24px 28px;
   }
 
   .schedule-time strong {
-    font-size: 1.25rem;
+    font-size: 1.5rem;
+  }
+
+  .schedule-time span {
+    font-size: 0.9rem;
   }
 
   .schedule-dest {
-    font-size: 1.05rem;
+    font-size: 1.2rem;
+  }
+  
+  .badge {
+    font-size: 1rem;
+    padding: 6px 14px;
   }
 }
