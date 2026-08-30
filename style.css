@@ -240,30 +240,36 @@ body.widget-mode .card:first-of-type { margin-bottom: 0; }
 ------------------------------------------------------------------------- */
 @media (min-width: 900px) {
   .app-header {
-    max-width: 1140px;
-    padding: 30px 20px 20px;
+    max-width: 1400px;
+    padding: 32px 24px 24px;
   }
   
   .app-header h1 {
-    font-size: 1.6rem;
+    font-size: 1.75rem;
   }
 
   .container {
-    max-width: 1140px;
+    max-width: 1400px;
     display: grid;
-    grid-template-columns: 360px 1fr;
-    gap: 24px;
+    grid-template-columns: 440px 1fr;
+    gap: 28px;
     align-items: start;
+    padding: 0 24px;
   }
 
-  /* Fixe la colonne de gauche en défilement si le tableau est long */
+  /* Fixe la colonne de gauche en défilement */
   .left-panel {
     position: sticky;
-    top: 20px;
+    top: 24px;
+  }
+
+  .card {
+    padding: 24px;
+    margin-bottom: 24px;
   }
 
   .map-container {
-    height: 320px;
+    height: 480px;
     margin-bottom: 0;
   }
 
@@ -272,12 +278,20 @@ body.widget-mode .card:first-of-type { margin-bottom: 0; }
   }
 
   .tabs-container {
-    flex-wrap: wrap; /* Sur PC, les onglets peuvent passer sur plusieurs lignes si besoin */
+    flex-wrap: wrap;
     overflow-x: visible;
   }
 
   .schedule-item {
-    grid-template-columns: 100px 65px 1fr;
-    padding: 16px 20px;
+    grid-template-columns: 110px 70px 1fr;
+    padding: 18px 24px;
+  }
+
+  .schedule-time strong {
+    font-size: 1.25rem;
+  }
+
+  .schedule-dest {
+    font-size: 1.05rem;
   }
 }

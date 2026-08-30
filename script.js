@@ -119,7 +119,6 @@ function initCarte() {
     L.marker([a.lat, a.lng]).addTo(map).bindPopup(`<b>${nomArret(a)}</b>`);
   });
 
-  // Redimensionne proprement la carte en cas de changement de taille de vitre (mobile/desktop)
   window.addEventListener('resize', () => {
     if (map) map.invalidateSize();
   });
