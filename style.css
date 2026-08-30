@@ -1,140 +1,138 @@
 /* Feuille de style - Horaires Rémi 45 */
 
-    * { box-sizing: border-box; font-family: 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 0; }
-    body { background-color: #f4f6f9; padding: 16px; color: #333; }
-    
-    .card {
-      background: white;
-      border-radius: 16px;
-      padding: 20px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-      margin-bottom: 16px;
-    }
+* { box-sizing: border-box; font-family: 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 0; }
+body { background-color: #f4f6f9; padding: 16px; color: #333; }
 
-    h1 { font-size: 1.3rem; color: #1a365d; margin-bottom: 12px; text-align: center; }
-    h2 { font-size: 1.1rem; color: #2d3748; margin-bottom: 12px; }
-    
-    #status-box {
-      font-size: 1.1rem;
-      font-weight: bold;
-      text-align: center;
-      padding: 14px;
-      border-radius: 12px;
-      margin-bottom: 15px;
-    }
+.card {
+  background: white;
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+  margin-bottom: 16px;
+}
 
-    .vacances { background-color: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
-    .scolaire { background-color: #e6fffa; color: #234e52; border: 1px solid #b2f5ea; }
-    .error { background-color: #fed7d7; color: #9b2c2c; }
+h1 { font-size: 1.3rem; color: #1a365d; margin-bottom: 12px; text-align: center; }
+h2 { font-size: 1.1rem; color: #2d3748; margin-bottom: 12px; }
 
-    .bus-info {
-      font-size: 1.1rem;
-      line-height: 1.5;
-      color: #2d3748;
-      background: #edf2f7;
-      padding: 16px;
-      border-left: 5px solid #3182ce;
-      border-radius: 8px;
-    }
+#status-box {
+  font-size: 1.1rem;
+  font-weight: bold;
+  text-align: center;
+  padding: 14px;
+  border-radius: 12px;
+  margin-bottom: 15px;
+}
 
-    /* La couleur vient du référentiel régional (route_color), appliquée en inline. */
-    .badge {
-      color: white;
-      padding: 2px 8px;
-      border-radius: 4px;
-      font-weight: bold;
-      font-size: 0.85rem;
-      white-space: nowrap;
-    }
+.vacances { background-color: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
+.scolaire { background-color: #e6fffa; color: #234e52; border: 1px solid #b2f5ea; }
+.error { background-color: #fed7d7; color: #9b2c2c; }
 
-    #map {
-      height: 250px;
-      width: 100%;
-      border-radius: 16px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-      margin-bottom: 16px;
-    }
+.bus-info {
+  font-size: 1.1rem;
+  line-height: 1.5;
+  color: #2d3748;
+  background: #edf2f7;
+  padding: 16px;
+  border-left: 5px solid #3182ce;
+  border-radius: 8px;
+}
 
-    .tabs-container {
-      display: flex;
-      gap: 8px;
-      overflow-x: auto;
-      padding-bottom: 8px;
-      margin-bottom: 12px;
-    }
-    .tab-btn {
-      background: #e2e8f0;
-      border: none;
-      padding: 8px 14px;
-      border-radius: 20px;
-      font-size: 0.85rem;
-      font-weight: 600;
-      white-space: nowrap;
-      cursor: pointer;
-      color: #4a5568;
-      max-width: 220px;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .tab-btn.active {
-      background: #3182ce;
-      color: white;
-    }
+.badge {
+  color: white;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-weight: bold;
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
 
-    .search-box {
-      width: 100%;
-      padding: 10px 14px;
-      font-size: 0.95rem;
-      border: 1px solid #cbd5e0;
-      border-radius: 8px;
-      margin-bottom: 12px;
-      outline: none;
-    }
-    .search-box:focus {
-      border-color: #3182ce;
-      box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.2);
-    }
+#map {
+  height: 250px;
+  width: 100%;
+  border-radius: 16px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+  margin-bottom: 16px;
+}
 
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 8px;
-      font-size: 0.85rem;
-    }
-    th, td {
-      padding: 10px 6px;
-      text-align: left;
-      border-bottom: 1px solid #e2e8f0;
-    }
-    th {
-      background-color: #f7fafc;
-      color: #4a5568;
-      font-weight: bold;
-    }
-    tr:hover { background-color: #f7fafc; }
-    .no-result {
-      padding: 12px;
-      color: #718096;
-      font-style: italic;
-      text-align: center;
-    }
+.tabs-container {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+  margin-bottom: 12px;
+}
+.tab-btn {
+  background: #e2e8f0;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  color: #4a5568;
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.tab-btn.active {
+  background: #3182ce;
+  color: white;
+}
 
-    /* --- MODE WIDGET (masque la carte et la grille) --- */
-    body.widget-mode #map,
-    body.widget-mode #card-horaires {
-      display: none;
-    }
-    body.widget-mode {
-      background: transparent;
-      padding: 0;
-    }
-    body.widget-mode .card:first-of-type {
-      margin-bottom: 0;
-    }
-    .source {
-      margin-top: 14px;
-      font-size: 0.75rem;
-      color: #718096;
-      line-height: 1.4;
-    }
-    .source a { color: #3182ce; }
+.search-box {
+  width: 100%;
+  padding: 10px 14px;
+  font-size: 0.95rem;
+  border: 1px solid #cbd5e0;
+  border-radius: 8px;
+  margin-bottom: 12px;
+  outline: none;
+}
+.search-box:focus {
+  border-color: #3182ce;
+  box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.2);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 8px;
+  font-size: 0.85rem;
+}
+th, td {
+  padding: 10px 6px;
+  text-align: left;
+  border-bottom: 1px solid #e2e8f0;
+}
+th {
+  background-color: #f7fafc;
+  color: #4a5568;
+  font-weight: bold;
+}
+tr:hover { background-color: #f7fafc; }
+.no-result {
+  padding: 12px;
+  color: #718096;
+  font-style: italic;
+  text-align: center;
+}
+
+body.widget-mode #map,
+body.widget-mode #card-horaires {
+  display: none;
+}
+body.widget-mode {
+  background: transparent;
+  padding: 0;
+}
+body.widget-mode .card:first-of-type {
+  margin-bottom: 0;
+}
+.source {
+  margin-top: 14px;
+  font-size: 0.75rem;
+  color: #718096;
+  line-height: 1.4;
+}
+.source a { color: #3182ce; }

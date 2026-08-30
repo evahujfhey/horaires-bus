@@ -1,6 +1,5 @@
-/* Horaires Rémi 45 — lignes 20A et 20B
- *
- * Sources de données (aucune clé d'API) :
+/* Horaires Rémi 45 — lignes 20A et 20B */
+ /* Sources de données (aucune clé d'API) :
  * - data/horaires.json  : arrêts, départs et calendriers, extraits du GTFS ouvert
  * par build-horaires.py (le GTFS lui-même n'a pas d'en-tête
  * CORS, un navigateur ne peut donc pas le lire directement)
@@ -48,12 +47,12 @@ function departsDuJour(arret, date) {
   return arret.departs
     .filter(d => serviceActif(d.s, jour, dow))
     .filter(d => {
-      const cle = d.h + d.l + d.dest;
+      const cle = d.h + d.arr + d.l + d.dest;
       if (vus.has(cle)) return false;
       vus.add(cle);
       return true;
     })
-    .sort((a, b) => a.h.localeCompare(b.h));
+    .sort((a, b) => a.h.localeCompare(b.h) || a.arr.localeCompare(b.arr));
 }
 
 /* ----------------------------------------------------------------- rendus */
@@ -101,7 +100,7 @@ function filterHoraires() {
   conteneur.innerHTML = `
     <table>
       <thead>
-        <tr><th>Départ</th><th>Arrivée</th><th>Ligne</th><th>Destination</th></tr>
+        <tr><th>Départ</th><th>Arrivée</th><th>Ligne</th><th>Arrêt desservi</th></tr>
       </thead>
       <tbody>
         ${departs.map(d => `
@@ -240,9 +239,9 @@ async function init() {
     return;
   }
 
-  // --- FILTRAGE DES ARRÊTS (Inclusions et Exclusions) ---
+    // --- FILTRAGE DES ARRÊTS (Inclusions et Exclusions) ---
   const communesAutorisees = ['orleans', 'loury', 'neuville aux bois'];
-  const motsExclus = ['charmettes', 'cimetiere', 'college', 'pichardiere']; // Ajout de stade et pichardiere
+  const motsExclus = ['charmettes', 'cimetiere', 'college', 'pichardiere'];
 
   if (REF && REF.arrets) {
     REF.arrets = REF.arrets.filter(a => {

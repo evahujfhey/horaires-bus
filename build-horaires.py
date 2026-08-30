@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """
 Génère data/horaires.json pour les lignes Rémi 20A et 20B à partir du GTFS ouvert.
+Calcule les arrivées uniquement vers les arrêts conservés situés en aval.
 """
 
 import argparse
@@ -130,60 +131,80 @@ def main():
         s["add" if r["exception_type"] == "1" else "rem"].append(r["date"])
     print(f"  {len(services)} services (calendriers)")
 
-    # --- regroupement
-    arrets = {}
-    for tid, seq in passages.items():
-        t = trips[tid]
-        ligne = LIGNES[t["route_id"].strip('"')]
-        terminus = seq[-1]
-        dest = t["trip_headsign"] or stops[terminus["stop_id"]]["stop_name"]
-        for p in seq[:-1]:
-            st = stops[p["stop_id"]]
-            aid = st["parent_station"] or p["stop_id"]
-            a = arrets.setdefault(aid, {
+    print("Récupération des communes…")
+    quais = {sid for tid in passages for sid in (p["stop_id"] for p in passages[tid])}
+    com = communes(quais)
+
+    # 1. Identifier tous les arrêts bruts
+    arrets_bruts = {}
+    for sid, st in stops.items():
+        aid = st["parent_station"] or sid
+        if aid not in arrets_bruts:
+            arrets_bruts[aid] = {
                 "id": aid,
                 "nom": stops.get(aid, st)["stop_name"],
                 "lat": float(stops.get(aid, st)["stop_lat"]),
                 "lng": float(stops.get(aid, st)["stop_lon"]),
+                "commune": "",
                 "departs": [],
-            })
-            a["departs"].append({
-                "h": p["departure_time"][:5],
-                "arr": terminus["arrival_time"][:5],
-                "l": ligne,
-                "dest": dest,
-                "s": t["service_id"],
-            })
+            }
 
-    # dédoublonnage
-    for a in arrets.values():
+    for aid, a in arrets_bruts.items():
+        for sid, st in stops.items():
+            if (st.get("parent_station") == aid or sid == aid) and sid in com:
+                a["commune"] = com[sid]
+                break
+
+    # 2. Filtrer les arrêts autorisés
+    COMMUNES_AUTORISEES = {"orleans", "loury", "neuville aux bois"}
+    MOTS_EXCLUS = {"charmettes", "cimetiere", "college", "pichardiere"}
+
+    arrets_filtres = {}
+    for aid, a in arrets_bruts.items():
+        c_norm = normaliser(a.get("commune", ""))
+        nom_norm = normaliser(a.get("nom", ""))
+        dans_commune = any(target in c_norm or target in nom_norm for target in COMMUNES_AUTORISEES)
+        est_exclu = any(exclu in nom_norm for exclu in MOTS_EXCLUS)
+        if dans_commune and not est_exclu:
+            arrets_filtres[aid] = a
+
+    def nom_affichage(a):
+        return f"{a['commune'].upper()} — {a['nom']}" if a.get("commune") else a["nom"]
+
+    # 3. Générer les départs uniquement vers les arrêts autorisés situés en aval
+    for tid, seq in passages.items():
+        t = trips[tid]
+        ligne = LIGNES[t["route_id"].strip('"')]
+
+        for i in range(len(seq) - 1):
+            p_dep = seq[i]
+            aid_dep = stops[p_dep["stop_id"]].get("parent_station") or p_dep["stop_id"]
+
+            if aid_dep not in arrets_filtres:
+                continue
+
+            for j in range(i + 1, len(seq)):
+                p_arr = seq[j]
+                aid_arr = stops[p_arr["stop_id"]].get("parent_station") or p_arr["stop_id"]
+
+                if aid_arr in arrets_filtres and aid_arr != aid_dep:
+                    arrets_filtres[aid_dep]["departs"].append({
+                        "h": p_dep["departure_time"][:5],
+                        "arr": p_arr["arrival_time"][:5],
+                        "l": ligne,
+                        "dest": nom_affichage(arrets_filtres[aid_arr]),
+                        "s": t["service_id"],
+                    })
+
+    # 4. Dédoublonner et trier
+    for a in arrets_filtres.values():
         vus, uniques = set(), []
-        for d in sorted(a["departs"], key=lambda d: (d["h"], d["l"], d["dest"])):
-            cle = (d["h"], d["l"], d["dest"], d["s"])
+        for d in sorted(a["departs"], key=lambda d: (d["h"], d["arr"], d["dest"], d["l"])):
+            cle = (d["h"], d["arr"], d["l"], d["dest"], d["s"])
             if cle not in vus:
                 vus.add(cle)
                 uniques.append(d)
         a["departs"] = uniques
-
-    print("Récupération des communes…")
-    quais = {sid for tid in passages for sid in (p["stop_id"] for p in passages[tid])}
-    com = communes(quais)
-    for aid, a in arrets.items():
-        for sid, st in stops.items():
-            if st.get("parent_station") == aid and sid in com:
-                a["commune"] = com[sid]
-                break
-        a.setdefault("commune", "")
-
-    # --- FILTRAGE DES ARRÊTS (Inclusions et Exclusions) ---
-    COMMUNES_AUTORISEES = {"orleans", "loury", "neuville aux bois"}
-    MOTS_EXCLUS = {"charmettes", "cimetiere", "college", "pichardiere"} # Ajout de et pichardiere
-
-    arrets_filtres = {
-        aid: a for aid, a in arrets.items()
-        if any(target in normaliser(a.get("commune", "")) or target in normaliser(a.get("nom", "")) for target in COMMUNES_AUTORISEES)
-        and not any(exclu in normaliser(a.get("nom", "")) for exclu in MOTS_EXCLUS)
-    }
 
     doc = {
         "genere_le": date.today().isoformat(),
@@ -198,7 +219,7 @@ def main():
         json.dump(doc, f, ensure_ascii=False, separators=(",", ":"))
 
     total = sum(len(a["departs"]) for a in doc["arrets"])
-    print(f"\n{args.out} : {len(doc['arrets'])} arrêts conservés sur {len(arrets)}, {total} départs, "
+    print(f"\n{args.out} : {len(doc['arrets'])} arrêts conservés sur {len(arrets_bruts)}, {total} départs, "
           f"{os.path.getsize(args.out) / 1024:.0f} Ko")
 
 if __name__ == "__main__":
