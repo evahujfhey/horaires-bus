@@ -1,4 +1,4 @@
-/* Horaires Rémi 45 — lignes 20A et 20B */
+/* Horaires Rémi 45 — Lignes 20A et 20B */
 
 const CONFIG = {
   horaires: 'data/horaires.json',
@@ -74,6 +74,7 @@ function selectArret(arretId) {
   filterHoraires();
 }
 
+// Fonction modernisée pour afficher des "cartes" au lieu d'un tableau HTML
 function filterHoraires() {
   const conteneur = document.getElementById('table-container');
   if (!REF) return;
@@ -91,20 +92,18 @@ function filterHoraires() {
   }
 
   conteneur.innerHTML = `
-    <table>
-      <thead>
-        <tr><th>Départ</th><th>Arrivée</th><th>Ligne</th><th>Arrêt desservi</th></tr>
-      </thead>
-      <tbody>
-        ${departs.map(d => `
-          <tr>
-            <td><b>${d.h}</b></td>
-            <td>${d.arr}</td>
-            <td>${badge(d.l)}</td>
-            <td>${d.dest}</td>
-          </tr>`).join('')}
-      </tbody>
-    </table>`;
+    <div class="schedule-list">
+      ${departs.map(d => `
+        <div class="schedule-item">
+          <div class="schedule-time">
+            <strong>${d.h}</strong>
+            <span>➔ ${d.arr}</span>
+          </div>
+          <div>${badge(d.l)}</div>
+          <div class="schedule-dest">${d.dest}</div>
+        </div>
+      `).join('')}
+    </div>`;
 }
 
 /* --------------------------------------------------------------- carte GPS */
@@ -113,8 +112,9 @@ function initCarte() {
   const el = document.getElementById('map');
   if (!el || typeof L === 'undefined') return;
   map = L.map('map').setView([48.0, 2.0], 10);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '© OpenStreetMap'
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+    attribution: '© OpenStreetMap © CARTO',
+    maxZoom: 19
   }).addTo(map);
   REF.arrets.forEach(a => {
     L.marker([a.lat, a.lng]).addTo(map).bindPopup(`<b>${nomArret(a)}</b>`);
@@ -150,7 +150,7 @@ function findNextBus(userLat, userLng) {
     resultat.innerHTML = `Prochain départ ${badge(prochain.l)} de `
       + `<b>${nomArret(arretProche)}</b> à <b>${prochain.h}</b>, `
       + `arrivée à <b>${prochain.dest}</b> à <b>${prochain.arr}</b>.`
-      + `<br><small>Arrêt à ${distMin.toFixed(1)} km de vous.</small>`;
+      + `<br><small style="color:var(--text-muted); margin-top:8px; display:block;">📍 Arrêt à ${distMin.toFixed(1)} km de vous.</small>`;
   } else {
     resultat.innerHTML = `Plus aucun départ aujourd'hui depuis <b>${nomArret(arretProche)}</b>.`;
   }
@@ -170,12 +170,10 @@ async function afficherPeriode() {
     const data = await res.json();
     const enVacances = data.total_count > 0;
     box.className = enVacances ? 'vacances' : 'scolaire';
-    box.innerText = enVacances
-      ? '🏖️ Vacances scolaires — offre réduite'
-      : '🏫 Période scolaire';
+    box.innerText = enVacances ? '🏖️ Vacances' : '🏫 Scolaire';
   } catch (e) {
     box.className = 'scolaire';
-    box.innerText = 'Calendrier scolaire indisponible';
+    box.innerText = 'Info non dispo';
   }
 }
 
@@ -226,13 +224,12 @@ async function init() {
   } catch (e) {
     const box = document.getElementById('status-box');
     box.className = 'error';
-    box.innerText = 'Horaires indisponibles';
-    resultat.innerHTML = `Impossible de charger <code>${CONFIG.horaires}</code> (${e.message}). `
-      + 'Relancez <code>build-horaires.py</code> puis publiez le fichier généré.';
+    box.innerText = 'Erreur';
+    resultat.innerHTML = `Données indisponibles. Relancez le script Python.`;
     return;
   }
 
-  // --- FILTRAGE DES ARRÊTS (Inclusions et Exclusions) ---
+  // --- FILTRAGE DES ARRÊTS ---
   const communesAutorisees = ['orleans', 'loury', 'neuville aux bois'];
   const motsExclus = ['charmettes', 'cimetiere', 'college', 'pichardiere'];
 
@@ -240,14 +237,11 @@ async function init() {
     REF.arrets = REF.arrets.filter(a => {
       const cNorm = normaliserChaine(a.commune);
       const nomNorm = normaliserChaine(a.nom);
-      
       const dansCommune = communesAutorisees.some(target => cNorm.includes(target) || nomNorm.includes(target));
       const estExclu = motsExclus.some(exclu => nomNorm.includes(exclu));
-      
       return dansCommune && !estExclu;
     });
 
-    // Suppression des 5 premiers arrêts de la liste finale
     REF.arrets = REF.arrets.slice(5);
   }
 
@@ -271,7 +265,7 @@ async function init() {
   const prochain = departsDuJour(defaut, new Date()).find(d => d.h >= hhmm(new Date()));
   resultat.innerHTML = prochain
     ? `Prochain départ ${badge(prochain.l)} de <b>${nomArret(defaut)}</b> à <b>${prochain.h}</b>.`
-      + '<br><small>Activez la géolocalisation pour l\'arrêt le plus proche.</small>'
+      + '<br><small style="color:var(--text-muted); margin-top:8px; display:block;">📍 Activez la géolocalisation pour l\'arrêt proche.</small>'
     : `Plus aucun départ aujourd'hui depuis <b>${nomArret(defaut)}</b>.`;
 
   if ('geolocation' in navigator && REF.arrets && REF.arrets.length > 0) {
@@ -280,14 +274,14 @@ async function init() {
         const la = pos.coords.latitude, lo = pos.coords.longitude;
         if (map) {
           if (userMarker) userMarker.setLatLng([la, lo]);
-          else userMarker = L.circleMarker([la, lo], { color: 'red', radius: 8 })
-                             .addTo(map).bindPopup('Vous êtes ici');
+          else userMarker = L.circleMarker([la, lo], { color: '#3b82f6', radius: 8, fillOpacity: 0.8 })
+                             .addTo(map).bindPopup('Votre position');
           map.setView([la, lo], 12);
         }
         findNextBus(la, lo);
       },
       () => {
-        resultat.innerHTML += '<br><small>Géolocalisation refusée : arrêt par défaut affiché.</small>';
+        resultat.innerHTML += '<br><small style="color:var(--text-muted); margin-top:8px; display:block;">Géolocalisation refusée.</small>';
       },
       { enableHighAccuracy: true, maximumAge: 10000, timeout: 5000 }
     );

@@ -1,136 +1,217 @@
-/* Feuille de style - Horaires Rémi 45 */
-
-* { box-sizing: border-box; font-family: 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 0; }
-body { background-color: #f4f6f9; padding: 16px; color: #333; }
-
-.card {
-  background: white;
-  border-radius: 16px;
-  padding: 20px;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-  margin-bottom: 16px;
+/* Variables pour un thème moderne et cohérent */
+:root {
+  --bg-app: #f1f5f9;
+  --bg-card: #ffffff;
+  --text-main: #0f172a;
+  --text-muted: #64748b;
+  --primary: #3b82f6;
+  --primary-hover: #2563eb;
+  --border: #e2e8f0;
+  --radius-lg: 20px;
+  --radius-md: 12px;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
+  --shadow-md: 0 4px 20px rgba(0,0,0,0.05);
 }
 
-h1 { font-size: 1.3rem; color: #1a365d; margin-bottom: 12px; text-align: center; }
-h2 { font-size: 1.1rem; color: #2d3748; margin-bottom: 12px; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body { 
+  background-color: var(--bg-app); 
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; 
+  color: var(--text-main); 
+  -webkit-font-smoothing: antialiased;
+  padding-bottom: 30px;
+}
+
+.container {
+  max-width: 600px; /* Centré et adapté pour mobile/tablette */
+  margin: 0 auto;
+  padding: 0 16px;
+}
+
+/* En-tête */
+.app-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 16px;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.app-header h1 {
+  font-size: 1.4rem;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
 
 #status-box {
-  font-size: 1.1rem;
-  font-weight: bold;
-  text-align: center;
-  padding: 14px;
-  border-radius: 12px;
-  margin-bottom: 15px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 30px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.vacances { background-color: #fef08a; color: #854d0e; }
+.scolaire { background-color: #d1fae5; color: #065f46; }
+.error { background-color: #fecaca; color: #991b1b; }
+
+/* Cartes */
+.card {
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  box-shadow: var(--shadow-md);
+  margin-bottom: 20px;
 }
 
-.vacances { background-color: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
-.scolaire { background-color: #e6fffa; color: #234e52; border: 1px solid #b2f5ea; }
-.error { background-color: #fed7d7; color: #9b2c2c; }
+.card h2 { 
+  font-size: 1.1rem; 
+  font-weight: 600;
+  margin-bottom: 16px; 
+}
 
+/* Info Bus (Mise en évidence) */
+.highlight-card {
+  background: linear-gradient(145deg, #ffffff, #f8fafc);
+  border: 1px solid var(--border);
+}
 .bus-info {
-  font-size: 1.1rem;
-  line-height: 1.5;
-  color: #2d3748;
-  background: #edf2f7;
+  font-size: 1rem;
+  line-height: 1.6;
+  color: var(--text-main);
+  background: #eff6ff;
   padding: 16px;
-  border-left: 5px solid #3182ce;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
+  border-left: 4px solid var(--primary);
 }
+.bus-info b { color: var(--primary-hover); }
 
+/* Badges de lignes */
 .badge {
   color: white;
-  padding: 2px 8px;
-  border-radius: 4px;
-  font-weight: bold;
+  padding: 4px 10px;
+  border-radius: 8px;
+  font-weight: 700;
   font-size: 0.85rem;
-  white-space: nowrap;
+  display: inline-block;
+  text-align: center;
+  min-width: 45px;
+  box-shadow: var(--shadow-sm);
 }
 
-#map {
-  height: 250px;
+/* Carte interactive */
+.map-container {
+  height: 220px;
   width: 100%;
-  border-radius: 16px;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-  margin-bottom: 16px;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  margin-bottom: 20px;
+  z-index: 1; /* Évite de passer au dessus des modales Leaflet */
 }
 
+/* Onglets (défilement horizontal invisible) */
 .tabs-container {
   display: flex;
-  gap: 8px;
+  gap: 10px;
   overflow-x: auto;
-  padding-bottom: 8px;
-  margin-bottom: 12px;
+  padding-bottom: 12px;
+  margin-bottom: 8px;
+  scrollbar-width: none; /* Firefox */
 }
+.tabs-container::-webkit-scrollbar { display: none; } /* Chrome/Safari */
+
 .tab-btn {
-  background: #e2e8f0;
-  border: none;
-  padding: 8px 14px;
-  border-radius: 20px;
-  font-size: 0.85rem;
-  font-weight: 600;
-  white-space: nowrap; /* Maintient le texte sur une seule ligne */
+  background: var(--bg-app);
+  border: 1px solid var(--border);
+  padding: 10px 16px;
+  border-radius: 30px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  white-space: nowrap;
   cursor: pointer;
-  color: #4a5568;
-  /* max-width et overflow supprimés pour afficher le texte en entier */
+  color: var(--text-muted);
+  transition: all 0.2s ease;
 }
 .tab-btn.active {
-  background: #3182ce;
+  background: var(--text-main);
   color: white;
+  border-color: var(--text-main);
+  box-shadow: var(--shadow-sm);
 }
 
+/* Barre de recherche */
+.search-wrapper { margin-bottom: 16px; }
 .search-box {
   width: 100%;
-  padding: 10px 14px;
+  padding: 12px 16px;
   font-size: 0.95rem;
-  border: 1px solid #cbd5e0;
-  border-radius: 8px;
-  margin-bottom: 12px;
+  background: var(--bg-app);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
   outline: none;
+  transition: border 0.2s;
 }
 .search-box:focus {
-  border-color: #3182ce;
-  box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.2);
+  border-color: var(--primary);
+  background: white;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
 }
 
-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 8px;
-  font-size: 0.85rem;
+/* Remplacement du tableau par une liste de cartes adaptées au mobile */
+.schedule-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
-th, td {
-  padding: 10px 6px;
-  text-align: left;
-  border-bottom: 1px solid #e2e8f0;
+.schedule-item {
+  display: grid;
+  grid-template-columns: 80px 50px 1fr;
+  align-items: center;
+  background: var(--bg-app);
+  padding: 14px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
 }
-th {
-  background-color: #f7fafc;
-  color: #4a5568;
-  font-weight: bold;
+.schedule-time {
+  display: flex;
+  flex-direction: column;
 }
-tr:hover { background-color: #f7fafc; }
+.schedule-time strong {
+  font-size: 1.15rem;
+  color: var(--text-main);
+}
+.schedule-time span {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+.schedule-dest {
+  font-weight: 500;
+  font-size: 0.95rem;
+  text-align: right;
+  line-height: 1.3;
+}
+
 .no-result {
-  padding: 12px;
-  color: #718096;
-  font-style: italic;
+  padding: 20px;
+  color: var(--text-muted);
+  text-align: center;
+  background: var(--bg-app);
+  border-radius: var(--radius-md);
+}
+
+/* Widget mode et Footer */
+body.widget-mode .map-container,
+body.widget-mode #card-horaires { display: none; }
+body.widget-mode { background: transparent; padding: 0; }
+body.widget-mode .card:first-of-type { margin-bottom: 0; }
+
+.source {
+  margin-top: 20px;
+  font-size: 0.75rem;
+  color: var(--text-muted);
   text-align: center;
 }
-
-body.widget-mode #map,
-body.widget-mode #card-horaires {
-  display: none;
-}
-body.widget-mode {
-  background: transparent;
-  padding: 0;
-}
-body.widget-mode .card:first-of-type {
-  margin-bottom: 0;
-}
-.source {
-  margin-top: 14px;
-  font-size: 0.75rem;
-  color: #718096;
-  line-height: 1.4;
-}
-.source a { color: #3182ce; }
+.source a { color: var(--primary); text-decoration: none; font-weight: 500;}

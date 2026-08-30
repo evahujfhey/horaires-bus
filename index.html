@@ -2,44 +2,58 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Mes Horaires Rémi 45</title>
+
+  <!-- Typographie moderne : Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer></script>
   <script src="script.js" defer></script>
 </head>
 <body>
 
-  <!-- Card Prochain Bus -->
-  <div class="card">
-    <h1>🚍 Rémi 45 - Prochain Passage</h1>
-    <div id="status-box">Vérification du calendrier...</div>
-    <div id="bus-result" class="bus-info">Recherche de l'arrêt le plus proche via GPS...</div>
-  </div>
+  <header class="app-header">
+    <h1>🚍 Rémi 45</h1>
+    <div id="status-box">Vérification...</div>
+  </header>
 
-  <!-- Carte Leaflet -->
-  <div id="map"></div>
+  <main class="container">
+    <!-- Card Prochain Bus -->
+    <section class="card highlight-card">
+      <h2>📍 Prochain Passage</h2>
+      <div id="bus-result" class="bus-info">Recherche de l'arrêt le plus proche via GPS...</div>
+    </section>
 
-  <!-- Section Grille Horaire -->
-  <div class="card" id="card-horaires">
-    <h2>📋 Fiche horaire du jour</h2>
+    <!-- Carte Leaflet -->
+    <div id="map" class="map-container"></div>
 
-    <div class="tabs-container" id="tabs"></div>
+    <!-- Section Grille Horaire -->
+    <section class="card" id="card-horaires">
+      <h2>📅 Horaires du jour</h2>
 
-    <input 
-      type="text" 
-      id="search-destination" 
-      class="search-box" 
-      placeholder="🔍 Filtrer par arrêt (ex : Orléans, Loury, Neuville)">
+      <div class="tabs-container" id="tabs"></div>
 
-    <div id="table-container"></div>
+      <div class="search-wrapper">
+        <input 
+          type="text" 
+          id="search-destination" 
+          class="search-box" 
+          placeholder="🔍 Filtrer par destination (ex : Orléans...)">
+      </div>
 
-    <p class="source">
-      Horaires issus du <a href="https://transport.data.gouv.fr/datasets/remi-offre-theorique-mobilite-reseau-interurbain-regional">GTFS Rémi</a>
-      (ODbL) — arrêts et couleurs de lignes via
-      <a href="https://data.centrevaldeloire.fr/">data.centrevaldeloire.fr</a>.
-    </p>
-  </div>
+      <div id="table-container"></div>
+
+      <p class="source">
+        Source : <a href="https://transport.data.gouv.fr/datasets/remi-offre-theorique-mobilite-reseau-interurbain-regional">GTFS Rémi</a> (ODbL).
+      </p>
+    </section>
+  </main>
+
 </body>
 </html>
