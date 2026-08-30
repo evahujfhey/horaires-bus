@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Mes Horaires Rémi 45</title>
   <link rel="icon" type="image/svg+xml" href="favicon-site.svg">
-  <link rel="apple-touch-icon" href="favicon-site.svg"> <!-- Pour iOS -->
+  <link rel="apple-touch-icon" href="favicon-site.svg">
 
   <!-- Typographie moderne : Inter -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -26,14 +26,17 @@
   </header>
 
   <main class="container">
-    <!-- Card Prochain Bus -->
-    <section class="card highlight-card">
-      <h2>📍 Prochain Passage</h2>
-      <div id="bus-result" class="bus-info">Recherche de l'arrêt le plus proche via GPS...</div>
-    </section>
+    <!-- Panneau latéral sur ordinateur / En-tête sur mobile -->
+    <aside class="left-panel">
+      <!-- Card Prochain Bus -->
+      <section class="card highlight-card">
+        <h2>📍 Prochain Passage</h2>
+        <div id="bus-result" class="bus-info">Recherche de l'arrêt le plus proche via GPS...</div>
+      </section>
 
-    <!-- Carte Leaflet -->
-    <div id="map" class="map-container"></div>
+      <!-- Carte Leaflet -->
+      <div id="map" class="map-container"></div>
+    </aside>
 
     <!-- Section Grille Horaire -->
     <section class="card" id="card-horaires">
@@ -52,7 +55,7 @@
       <div id="table-container"></div>
 
       <p class="source">
-        Source : <a href="https://transport.data.gouv.fr/datasets/remi-offre-theorique-mobilite-reseau-interurbain-regional">GTFS Rémi</a> (ODbL).
+        Source : <a href="https://transport.data.gouv.fr/datasets/remi-offre-theorique-mobilite-reseau-interurbain-regional" target="_blank" rel="noopener">GTFS Rémi</a> (ODbL).
       </p>
     </section>
   </main>

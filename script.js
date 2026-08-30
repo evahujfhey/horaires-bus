@@ -74,7 +74,6 @@ function selectArret(arretId) {
   filterHoraires();
 }
 
-// Fonction modernisée pour afficher des "cartes" au lieu d'un tableau HTML
 function filterHoraires() {
   const conteneur = document.getElementById('table-container');
   if (!REF) return;
@@ -118,6 +117,11 @@ function initCarte() {
   }).addTo(map);
   REF.arrets.forEach(a => {
     L.marker([a.lat, a.lng]).addTo(map).bindPopup(`<b>${nomArret(a)}</b>`);
+  });
+
+  // Redimensionne proprement la carte en cas de changement de taille de vitre (mobile/desktop)
+  window.addEventListener('resize', () => {
+    if (map) map.invalidateSize();
   });
 }
 

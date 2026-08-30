@@ -23,12 +23,6 @@ body {
   padding-bottom: 30px;
 }
 
-.container {
-  max-width: 600px; /* Centré et adapté pour mobile/tablette */
-  margin: 0 auto;
-  padding: 0 16px;
-}
-
 /* En-tête */
 .app-header {
   display: flex;
@@ -57,6 +51,20 @@ body {
 .scolaire { background-color: #d1fae5; color: #065f46; }
 .error { background-color: #fecaca; color: #991b1b; }
 
+/* Disposition principale (Mobile par défaut) */
+.container {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 0 16px;
+  display: flex;
+  flex-direction: column;
+}
+
+.left-panel {
+  display: flex;
+  flex-direction: column;
+}
+
 /* Cartes */
 .card {
   background: var(--bg-card);
@@ -77,6 +85,7 @@ body {
   background: linear-gradient(145deg, #ffffff, #f8fafc);
   border: 1px solid var(--border);
 }
+
 .bus-info {
   font-size: 1rem;
   line-height: 1.6;
@@ -103,24 +112,24 @@ body {
 
 /* Carte interactive */
 .map-container {
-  height: 220px;
+  height: 240px;
   width: 100%;
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-md);
   margin-bottom: 20px;
-  z-index: 1; /* Évite de passer au dessus des modales Leaflet */
+  z-index: 1;
 }
 
-/* Onglets (défilement horizontal invisible) */
+/* Onglets */
 .tabs-container {
   display: flex;
   gap: 10px;
   overflow-x: auto;
   padding-bottom: 12px;
   margin-bottom: 8px;
-  scrollbar-width: none; /* Firefox */
+  scrollbar-width: none;
 }
-.tabs-container::-webkit-scrollbar { display: none; } /* Chrome/Safari */
+.tabs-container::-webkit-scrollbar { display: none; }
 
 .tab-btn {
   background: var(--bg-app);
@@ -133,6 +142,9 @@ body {
   cursor: pointer;
   color: var(--text-muted);
   transition: all 0.2s ease;
+}
+.tab-btn:hover {
+  background: #e2e8f0;
 }
 .tab-btn.active {
   background: var(--text-main);
@@ -151,7 +163,7 @@ body {
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   outline: none;
-  transition: border 0.2s;
+  transition: all 0.2s;
 }
 .search-box:focus {
   border-color: var(--primary);
@@ -159,7 +171,7 @@ body {
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
 }
 
-/* Remplacement du tableau par une liste de cartes adaptées au mobile */
+/* Liste des horaires */
 .schedule-list {
   display: flex;
   flex-direction: column;
@@ -167,13 +179,20 @@ body {
 }
 .schedule-item {
   display: grid;
-  grid-template-columns: 80px 50px 1fr;
+  grid-template-columns: 85px 55px 1fr;
   align-items: center;
   background: var(--bg-app);
-  padding: 14px;
+  padding: 14px 18px;
   border-radius: var(--radius-md);
   border: 1px solid var(--border);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
+.schedule-item:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+  background: #ffffff;
+}
+
 .schedule-time {
   display: flex;
   flex-direction: column;
@@ -215,3 +234,50 @@ body.widget-mode .card:first-of-type { margin-bottom: 0; }
   text-align: center;
 }
 .source a { color: var(--primary); text-decoration: none; font-weight: 500;}
+
+/* -------------------------------------------------------------------------
+   MEDIA QUERY : ORDINATEUR & GRANDS ÉCRANS (>= 900px)
+------------------------------------------------------------------------- */
+@media (min-width: 900px) {
+  .app-header {
+    max-width: 1140px;
+    padding: 30px 20px 20px;
+  }
+  
+  .app-header h1 {
+    font-size: 1.6rem;
+  }
+
+  .container {
+    max-width: 1140px;
+    display: grid;
+    grid-template-columns: 360px 1fr;
+    gap: 24px;
+    align-items: start;
+  }
+
+  /* Fixe la colonne de gauche en défilement si le tableau est long */
+  .left-panel {
+    position: sticky;
+    top: 20px;
+  }
+
+  .map-container {
+    height: 320px;
+    margin-bottom: 0;
+  }
+
+  #card-horaires {
+    margin-bottom: 0;
+  }
+
+  .tabs-container {
+    flex-wrap: wrap; /* Sur PC, les onglets peuvent passer sur plusieurs lignes si besoin */
+    overflow-x: visible;
+  }
+
+  .schedule-item {
+    grid-template-columns: 100px 65px 1fr;
+    padding: 16px 20px;
+  }
+}
