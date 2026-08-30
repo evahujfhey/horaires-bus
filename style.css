@@ -237,7 +237,6 @@ body.widget-mode .card:first-of-type { margin-bottom: 0; }
 
 /* -------------------------------------------------------------------------
    MEDIA QUERY : ORDINATEUR & GRANDS ÉCRANS (>= 900px)
-   Version corrigée : Élargissement global, carte plus grande, tableau espacé
 ------------------------------------------------------------------------- */
 @media (min-width: 900px) {
   .app-header {
@@ -249,26 +248,18 @@ body.widget-mode .card:first-of-type { margin-bottom: 0; }
     font-size: 1.85rem;
   }
 
-/* Agrandissement spécifique : Badge statut (Vacances/Scolaire) */
+  /* Badge statut : Taille et padding identiques aux onglets (.tab-btn) */
   #status-box {
-    font-size: 1.1rem;
-    padding: 10px 20px;
-    letter-spacing: 1px;
+    font-size: 1rem;
+    padding: 12px 24px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
   }
 
   .container {
     max-width: 1500px;
     display: grid;
     grid-template-columns: 520px 1fr;
-    gap: 36px;
-    align-items: start;
-    padding: 0 24px;
-  }
-
-  .container {
-    max-width: 1500px;
-    display: grid;
-    grid-template-columns: 520px 1fr; /* Colonne gauche agrandie */
     gap: 36px;
     align-items: start;
     padding: 0 24px;
@@ -285,7 +276,7 @@ body.widget-mode .card:first-of-type { margin-bottom: 0; }
     margin-bottom: 28px;
   }
 
-  /* Agrandissement spécifique : Carte prochain passage */
+  /* Carte prochain passage */
   .highlight-card h2 {
     font-size: 1.4rem;
     margin-bottom: 20px;
@@ -297,9 +288,9 @@ body.widget-mode .card:first-of-type { margin-bottom: 0; }
     line-height: 1.7;
   }
 
-  /* Agrandissement spécifique : Carte Leaflet */
+  /* Carte Leaflet */
   .map-container {
-    height: 600px; /* Plan considérablement agrandi */
+    height: 600px;
     margin-bottom: 0;
   }
 
@@ -319,7 +310,7 @@ body.widget-mode .card:first-of-type { margin-bottom: 0; }
     padding: 12px 20px;
   }
 
-  /* Agrandissement spécifique : Tableau des horaires */
+  /* Tableau des horaires */
   .schedule-item {
     grid-template-columns: 130px 80px 1fr;
     padding: 24px 28px;
