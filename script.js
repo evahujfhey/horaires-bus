@@ -1,11 +1,4 @@
 /* Horaires Rémi 45 — lignes 20A et 20B */
- /* Sources de données (aucune clé d'API) :
- * - data/horaires.json  : arrêts, départs et calendriers, extraits du GTFS ouvert
- * par build-horaires.py (le GTFS lui-même n'a pas d'en-tête
- * CORS, un navigateur ne peut donc pas le lire directement)
- * - data.centrevaldeloire.fr : libellés et couleurs officiels des lignes
- * - data.education.gouv.fr   : calendrier scolaire de la zone Orléans-Tours
- */
 
 const CONFIG = {
   horaires: 'data/horaires.json',
@@ -239,7 +232,7 @@ async function init() {
     return;
   }
 
-    // --- FILTRAGE DES ARRÊTS (Inclusions et Exclusions) ---
+  // --- FILTRAGE DES ARRÊTS (Inclusions et Exclusions) ---
   const communesAutorisees = ['orleans', 'loury', 'neuville aux bois'];
   const motsExclus = ['charmettes', 'cimetiere', 'college', 'pichardiere'];
 
@@ -253,6 +246,9 @@ async function init() {
       
       return dansCommune && !estExclu;
     });
+
+    // Suppression des 5 premiers arrêts de la liste finale
+    REF.arrets = REF.arrets.slice(5);
   }
 
   await rafraichirLignes();

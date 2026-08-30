@@ -68,12 +68,10 @@ h2 { font-size: 1.1rem; color: #2d3748; margin-bottom: 12px; }
   border-radius: 20px;
   font-size: 0.85rem;
   font-weight: 600;
-  white-space: nowrap;
+  white-space: nowrap; /* Maintient le texte sur une seule ligne */
   cursor: pointer;
   color: #4a5568;
-  max-width: 220px;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  /* max-width et overflow supprimés pour afficher le texte en entier */
 }
 .tab-btn.active {
   background: #3182ce;
