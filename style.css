@@ -195,17 +195,54 @@ body {
   background: #ffffff;
 }
 
-/* Styles pour les bus en cours de trajet (en route / déjà partis de l'arrêt) */
+/* ------------- NOUVEAUX STYLES DES JOURS ET STATUTS ------------- */
+
+/* Bus de demain (Bordure pointillée pour distinguer) */
+.schedule-item.tomorrow-bus {
+  background-color: #f8fafc;
+  border-style: dashed;
+  border-color: #cbd5e1;
+}
+
+/* Bus en cours de trajet */
 .schedule-item.in-transit-bus {
   background-color: #fefce8;
   border: 1px solid #fef08a;
   border-left: 4px solid #eab308;
 }
-
 .schedule-item.in-transit-bus:hover {
   transform: none;
   box-shadow: none;
   background-color: #fef9c3;
+}
+
+/* Bus déjà passés */
+.schedule-item.past-bus {
+  opacity: 0.5;
+  background-color: var(--bg-app);
+}
+.schedule-item.past-bus:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+/* Badges textes d'états (Demain, Aujourd'hui, Passé...) */
+.tomorrow-label {
+  font-size: 0.75rem;
+  color: #8b5cf6; /* Violet pour demain */
+  margin-top: 4px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+}
+
+.today-label {
+  font-size: 0.75rem;
+  color: var(--primary);
+  margin-top: 4px;
+  font-weight: 600;
 }
 
 .in-transit-label {
@@ -220,17 +257,6 @@ body {
   gap: 4px;
 }
 
-/* Styles pour les bus déjà passés (arrivée dépassée) */
-.schedule-item.past-bus {
-  opacity: 0.5;
-  background-color: var(--bg-app);
-}
-
-.schedule-item.past-bus:hover {
-  transform: none; /* Annule l'effet de soulèvement */
-  box-shadow: none;
-}
-
 .past-label {
   font-size: 0.75rem;
   color: var(--text-muted);
@@ -238,6 +264,8 @@ body {
   font-style: italic;
   font-weight: 500;
 }
+
+/* ----------------------------------------------------------------- */
 
 .schedule-time {
   display: flex;
@@ -284,27 +312,19 @@ body.widget-mode .card:first-of-type { margin-bottom: 0; }
 }
 .source a { color: var(--primary); text-decoration: none; font-weight: 500;}
 
-/* -------------------------------------------------------------------------
-   MEDIA QUERY : ORDINATEUR & GRANDS ÉCRANS (>= 900px)
-------------------------------------------------------------------------- */
+/* MEDIA QUERY : ORDINATEUR & GRANDS ÉCRANS */
 @media (min-width: 900px) {
   .app-header {
     max-width: 1500px;
     padding: 32px 24px 24px;
   }
-  
-  .app-header h1 {
-    font-size: 1.85rem;
-  }
-
-  /* Badge statut : Taille et padding identiques aux onglets (.tab-btn) */
+  .app-header h1 { font-size: 1.85rem; }
   #status-box {
     font-size: 1rem;
     padding: 12px 24px;
     font-weight: 700;
     letter-spacing: 0.5px;
   }
-
   .container {
     max-width: 1500px;
     display: grid;
@@ -313,90 +333,60 @@ body.widget-mode .card:first-of-type { margin-bottom: 0; }
     align-items: start;
     padding: 0 24px;
   }
-
-  /* Fixe la colonne de gauche en défilement */
   .left-panel {
     position: sticky;
     top: 24px;
   }
-
   .card {
     padding: 32px;
     margin-bottom: 28px;
   }
-
-  /* Carte prochain passage */
   .highlight-card h2 {
     font-size: 1.4rem;
     margin-bottom: 20px;
   }
-
   .bus-info {
     font-size: 1.15rem;
     padding: 24px;
     line-height: 1.7;
   }
-
-  /* Carte Leaflet */
   .map-container {
     height: 600px;
     margin-bottom: 0;
   }
-
-  #card-horaires {
-    margin-bottom: 0;
-  }
-
+  #card-horaires { margin-bottom: 0; }
   .tabs-container {
     flex-wrap: wrap;
     overflow-x: visible;
     gap: 12px;
     padding-bottom: 16px;
   }
-
   .tab-btn {
     font-size: 1rem;
     padding: 12px 20px;
   }
-
-  /* Tableau des horaires */
   .schedule-item {
     grid-template-columns: 130px 80px 1fr;
     padding: 24px 28px;
   }
-
-  .schedule-time strong {
-    font-size: 1.5rem;
-  }
-
-  .schedule-time span {
-    font-size: 0.9rem;
-  }
-
-  .schedule-dest {
-    font-size: 1.2rem;
-  }
-  
-  .badge {
-    font-size: 1rem;
-    padding: 6px 14px;
-  }
+  .schedule-time strong { font-size: 1.5rem; }
+  .schedule-time span { font-size: 0.9rem; }
+  .schedule-dest { font-size: 1.2rem; }
+  .badge { font-size: 1rem; padding: 6px 14px; }
 }
 
-/* -------------------------------------------------------------------------
-   Bouton de recentrage de la carte
-------------------------------------------------------------------------- */
+/* Bouton de recentrage de la carte */
 .map-wrapper {
   position: relative;
   width: 100%;
 }
 
 .recenter-btn {
-  display: none; /* Masqué par défaut */
+  display: none; 
   position: absolute;
   top: 15px;
   right: 15px;
-  z-index: 1000; /* Permet de passer par-dessus la carte Leaflet */
+  z-index: 1000; 
   background: var(--bg-card);
   color: var(--primary);
   border: 1px solid var(--border);
@@ -408,7 +398,6 @@ body.widget-mode .card:first-of-type { margin-bottom: 0; }
   cursor: pointer;
   transition: background 0.2s;
 }
-
 .recenter-btn:hover {
   background: #f1f5f9;
 }

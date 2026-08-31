@@ -50,6 +50,29 @@ function departsDuJour(arret, date) {
     .sort((a, b) => a.h.localeCompare(b.h) || a.arr.localeCompare(b.arr));
 }
 
+// NOUVEAU : Récupère les horaires sur 24h glissantes (Aujourd'hui + Demain jusqu'à la même heure)
+function getProchaines24Heures(arret) {
+  const now = new Date();
+  const hhmmnow = hhmm(now);
+  const demainDate = new Date(now.getTime() + 86400000); // +24 heures
+
+  // On prend tous les horaires d'aujourd'hui (incluant les passés)
+  let listeAujourdhui = departsDuJour(arret, now).map(d => ({ 
+    ...d, 
+    isDemain: false 
+  }));
+
+  // On prend les horaires de demain, mais uniquement jusqu'à l'heure actuelle
+  let listeDemain = departsDuJour(arret, demainDate)
+    .filter(d => d.h <= hhmmnow)
+    .map(d => ({ 
+      ...d, 
+      isDemain: true 
+    }));
+
+  return [...listeAujourdhui, ...listeDemain];
+}
+
 /* ----------------------------------------------------------------- rendus */
 
 function nomArret(a) {
@@ -83,16 +106,17 @@ function filterHoraires() {
   if (!arret) return;
 
   const recherche = (document.getElementById('search-destination').value || '').toLowerCase().trim();
-  const departs = departsDuJour(arret, new Date())
+  
+  // Utilisation de la nouvelle fonction sur 24h
+  const departs = getProchaines24Heures(arret)
     .filter(d => d.dest.toLowerCase().includes(recherche));
 
   if (departs.length === 0) {
-    conteneur.innerHTML = '<div class="no-result">Aucun départ aujourd\'hui depuis cet arrêt'
+    conteneur.innerHTML = '<div class="no-result">Aucun départ prévu dans les prochaines 24h'
       + (recherche ? ' vers cette destination.' : '.') + '</div>';
     return;
   }
 
-  // On récupère l'heure actuelle pour évaluer le statut du bus
   const maintenant = hhmm(new Date());
 
   conteneur.innerHTML = `
@@ -101,14 +125,21 @@ function filterHoraires() {
         let itemClass = '';
         let statusLabel = '';
 
-        if (maintenant >= d.arr) {
-          // Le bus est déjà arrivé à destination
-          itemClass = ' past-bus';
-          statusLabel = '<div class="past-label">Déjà passé</div>';
-        } else if (maintenant >= d.h && maintenant < d.arr) {
-          // Le bus a quitté l'arrêt mais n'est pas encore arrivé à destination
-          itemClass = ' in-transit-bus';
-          statusLabel = '<div class="in-transit-label">🚌 En route (Déjà parti)</div>';
+        if (d.isDemain) {
+          // Bus de demain (n'est pas encore passé)
+          itemClass = ' tomorrow-bus';
+          statusLabel = '<div class="tomorrow-label">📅 Demain</div>';
+        } else {
+          // Bus d'aujourd'hui : vérification du statut
+          if (maintenant >= d.arr) {
+            itemClass = ' past-bus';
+            statusLabel = '<div class="past-label">Déjà passé</div>';
+          } else if (maintenant >= d.h && maintenant < d.arr) {
+            itemClass = ' in-transit-bus';
+            statusLabel = '<div class="in-transit-label">🚌 En route</div>';
+          } else {
+            statusLabel = '<div class="today-label">Aujourd\'hui</div>';
+          }
         }
 
         return `
@@ -140,7 +171,7 @@ function initCarte() {
     L.marker([a.lat, a.lng]).addTo(map).bindPopup(`<b>${nomArret(a)}</b>`);
   });
 
-  // Fait apparaître le bouton dès que l'utilisateur déplace la carte manuellement
+    // Fait apparaître le bouton dès que l'utilisateur déplace la carte manuellement
   map.on('dragstart', () => {
     const btn = document.getElementById('recenter-btn');
     if (btn) btn.style.display = 'block';
@@ -173,24 +204,33 @@ function findNextBus(userLat, userLng) {
     if (d < distMin) { distMin = d; arretProche = a; }
   });
 
-  lastClosestStop = arretProche; // Sauvegarde l'arrêt pour le bouton "Recentrer"
+  lastClosestStop = arretProche;
 
-  // Centre la carte sur l'arrêt le plus proche uniquement au premier chargement GPS
   if (map && !mapCenteredOnce) {
     map.setView([arretProche.lat, arretProche.lng], 14);
     mapCenteredOnce = true;
   }
 
   const maintenant = hhmm(now);
-  const prochain = departsDuJour(arretProche, now).find(d => d.h >= maintenant);
+  const depsAujourdhui = departsDuJour(arretProche, now);
+  let prochain = depsAujourdhui.find(d => d.h >= maintenant);
+  let jourTexte = "aujourd'hui";
+
+  // S'il n'y a plus de bus aujourd'hui, on cherche le premier bus de demain
+  if (!prochain) {
+    const demain = new Date(now.getTime() + 86400000);
+    const depsDemain = departsDuJour(arretProche, demain);
+    prochain = depsDemain.length > 0 ? depsDemain[0] : null;
+    jourTexte = "demain";
+  }
 
   if (prochain) {
     resultat.innerHTML = `Prochain départ ${badge(prochain.l)} de `
-      + `<b>${nomArret(arretProche)}</b> à <b>${prochain.h}</b>, `
+      + `<b>${nomArret(arretProche)}</b> à <b>${prochain.h}</b> <i>(${jourTexte})</i>, `
       + `arrivée à <b>${prochain.dest}</b> à <b>${prochain.arr}</b>.`
       + `<br><small style="color:var(--text-muted); margin-top:8px; display:block;">📍 Arrêt à ${distMin.toFixed(1)} km de vous.</small>`;
   } else {
-    resultat.innerHTML = `Plus aucun départ aujourd'hui depuis <b>${nomArret(arretProche)}</b>.`;
+    resultat.innerHTML = `Aucun départ prévu d'ici demain pour <b>${nomArret(arretProche)}</b>.`;
   }
 }
 
@@ -235,16 +275,14 @@ function brancherEvenements() {
     if (btn) selectArret(btn.dataset.arret);
   });
   
-  document.getElementById('search-destination')
-    .addEventListener('input', filterHoraires);
+  document.getElementById('search-destination').addEventListener('input', filterHoraires);
     
-  // Connexion du bouton de recentrage
   const btnRecenter = document.getElementById('recenter-btn');
   if (btnRecenter) {
     btnRecenter.addEventListener('click', () => {
       if (map && lastClosestStop) {
         map.setView([lastClosestStop.lat, lastClosestStop.lng], 14);
-        btnRecenter.style.display = 'none'; // Masque le bouton après le clic
+        btnRecenter.style.display = 'none'; 
       }
     });
   }
@@ -277,7 +315,6 @@ async function init() {
     return;
   }
 
-  // --- FILTRAGE DES ARRÊTS ---
   const communesAutorisees = ['orleans', 'loury', 'neuville aux bois'];
   const motsExclus = ['charmettes', 'cimetiere', 'college', 'pichardiere'];
 
@@ -310,11 +347,22 @@ async function init() {
   selectArret(defaut.id);
   afficherPeriode();
 
-  const prochain = departsDuJour(defaut, new Date()).find(d => d.h >= hhmm(new Date()));
+  // Même logique d'initialisation pour trouver le prochain bus (aujourd'hui ou demain)
+  const depsAujourdhui = departsDuJour(defaut, new Date());
+  let prochain = depsAujourdhui.find(d => d.h >= hhmm(new Date()));
+  let jourStr = "aujourd'hui";
+  
+  if (!prochain) {
+      const demain = new Date(new Date().getTime() + 86400000);
+      const depsDemain = departsDuJour(defaut, demain);
+      prochain = depsDemain.length > 0 ? depsDemain[0] : null;
+      jourStr = "demain";
+  }
+
   resultat.innerHTML = prochain
-    ? `Prochain départ ${badge(prochain.l)} de <b>${nomArret(defaut)}</b> à <b>${prochain.h}</b>.`
+    ? `Prochain départ ${badge(prochain.l)} de <b>${nomArret(defaut)}</b> à <b>${prochain.h}</b> <i>(${jourStr})</i>.`
       + '<br><small style="color:var(--text-muted); margin-top:8px; display:block;">📍 Activez la géolocalisation pour l\'arrêt proche.</small>'
-    : `Plus aucun départ aujourd'hui depuis <b>${nomArret(defaut)}</b>.`;
+    : `Aucun départ prévu d'ici demain depuis <b>${nomArret(defaut)}</b>.`;
 
   if ('geolocation' in navigator && REF.arrets && REF.arrets.length > 0) {
     navigator.geolocation.watchPosition(
