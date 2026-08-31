@@ -177,6 +177,7 @@ body {
   flex-direction: column;
   gap: 12px;
 }
+
 .schedule-item {
   display: grid;
   grid-template-columns: 85px 55px 1fr;
@@ -187,25 +188,48 @@ body {
   border: 1px solid var(--border);
   transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
+
 .schedule-item:hover {
   transform: translateY(-1px);
   box-shadow: var(--shadow-sm);
   background: #ffffff;
 }
 
+/* Styles pour les bus déjà passés */
+.schedule-item.past-bus {
+  opacity: 0.5;
+  background-color: var(--bg-app);
+}
+
+.schedule-item.past-bus:hover {
+  transform: none; /* Annule l'effet de soulèvement */
+  box-shadow: none;
+}
+
+.past-label {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-top: 4px;
+  font-style: italic;
+  font-weight: 500;
+}
+
 .schedule-time {
   display: flex;
   flex-direction: column;
 }
+
 .schedule-time strong {
   font-size: 1.15rem;
   color: var(--text-main);
 }
+
 .schedule-time span {
   font-size: 0.75rem;
   color: var(--text-muted);
   margin-top: 2px;
 }
+
 .schedule-dest {
   font-weight: 500;
   font-size: 0.95rem;

@@ -92,18 +92,28 @@ function filterHoraires() {
     return;
   }
 
+  // On récupère l'heure actuelle pour griser les bus passés
+  const maintenant = hhmm(new Date());
+
   conteneur.innerHTML = `
     <div class="schedule-list">
-      ${departs.map(d => `
-        <div class="schedule-item">
+      ${departs.map(d => {
+        const isPast = d.h < maintenant;
+        const pastClass = isPast ? ' past-bus' : '';
+        const pastLabel = isPast ? '<div class="past-label">Déjà passé</div>' : '';
+
+        return `
+        <div class="schedule-item${pastClass}">
           <div class="schedule-time">
             <strong>${d.h}</strong>
             <span>➔ ${d.arr}</span>
           </div>
           <div>${badge(d.l)}</div>
-          <div class="schedule-dest">${d.dest}</div>
+          <div class="schedule-dest">
+            ${d.dest}${pastLabel}
+          </div>
         </div>
-      `).join('')}
+      `}).join('')}
     </div>`;
 }
 
