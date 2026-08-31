@@ -195,7 +195,32 @@ body {
   background: #ffffff;
 }
 
-/* Styles pour les bus déjà passés */
+/* Styles pour les bus en cours de trajet (en route / déjà partis de l'arrêt) */
+.schedule-item.in-transit-bus {
+  background-color: #fefce8;
+  border: 1px solid #fef08a;
+  border-left: 4px solid #eab308;
+}
+
+.schedule-item.in-transit-bus:hover {
+  transform: none;
+  box-shadow: none;
+  background-color: #fef9c3;
+}
+
+.in-transit-label {
+  font-size: 0.75rem;
+  color: #ca8a04;
+  margin-top: 4px;
+  font-style: italic;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+}
+
+/* Styles pour les bus déjà passés (arrivée dépassée) */
 .schedule-item.past-bus {
   opacity: 0.5;
   background-color: var(--bg-app);

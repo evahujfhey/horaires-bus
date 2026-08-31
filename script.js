@@ -92,25 +92,34 @@ function filterHoraires() {
     return;
   }
 
-  // On récupère l'heure actuelle pour griser les bus passés
+  // On récupère l'heure actuelle pour évaluer le statut du bus
   const maintenant = hhmm(new Date());
 
   conteneur.innerHTML = `
     <div class="schedule-list">
       ${departs.map(d => {
-        const isPast = d.h < maintenant;
-        const pastClass = isPast ? ' past-bus' : '';
-        const pastLabel = isPast ? '<div class="past-label">Déjà passé</div>' : '';
+        let itemClass = '';
+        let statusLabel = '';
+
+        if (maintenant >= d.arr) {
+          // Le bus est déjà arrivé à destination
+          itemClass = ' past-bus';
+          statusLabel = '<div class="past-label">Déjà passé</div>';
+        } else if (maintenant >= d.h && maintenant < d.arr) {
+          // Le bus a quitté l'arrêt mais n'est pas encore arrivé à destination
+          itemClass = ' in-transit-bus';
+          statusLabel = '<div class="in-transit-label">🚌 En route (Déjà parti)</div>';
+        }
 
         return `
-        <div class="schedule-item${pastClass}">
+        <div class="schedule-item${itemClass}">
           <div class="schedule-time">
             <strong>${d.h}</strong>
             <span>➔ ${d.arr}</span>
           </div>
           <div>${badge(d.l)}</div>
           <div class="schedule-dest">
-            ${d.dest}${pastLabel}
+            ${d.dest}${statusLabel}
           </div>
         </div>
       `}).join('')}
