@@ -14,6 +14,7 @@ let map = null;
 let userMarker = null;
 let mapCenteredOnce = false; 
 let lastClosestStop = null;
+let autoTabSelected = false; // Empêche de réécrire le choix manuel de l'utilisateur
 
 /* ------------------------------------------------------------------ dates */
 
@@ -50,19 +51,16 @@ function departsDuJour(arret, date) {
     .sort((a, b) => a.h.localeCompare(b.h) || a.arr.localeCompare(b.arr));
 }
 
-// NOUVEAU : Récupère les horaires sur 24h glissantes (Aujourd'hui + Demain jusqu'à la même heure)
 function getProchaines24Heures(arret) {
   const now = new Date();
   const hhmmnow = hhmm(now);
-  const demainDate = new Date(now.getTime() + 86400000); // +24 heures
+  const demainDate = new Date(now.getTime() + 86400000);
 
-  // On prend tous les horaires d'aujourd'hui (incluant les passés)
   let listeAujourdhui = departsDuJour(arret, now).map(d => ({ 
     ...d, 
     isDemain: false 
   }));
 
-  // On prend les horaires de demain, mais uniquement jusqu'à l'heure actuelle
   let listeDemain = departsDuJour(arret, demainDate)
     .filter(d => d.h <= hhmmnow)
     .map(d => ({ 
@@ -93,7 +91,10 @@ function renderTabs() {
   ).join('');
 }
 
-function selectArret(arretId) {
+function selectArret(arretId, fromUser = false) {
+  if (fromUser) {
+    autoTabSelected = true;
+  }
   currentArretId = arretId;
   renderTabs();
   filterHoraires();
@@ -107,7 +108,6 @@ function filterHoraires() {
 
   const recherche = (document.getElementById('search-destination').value || '').toLowerCase().trim();
   
-  // Utilisation de la nouvelle fonction sur 24h
   const departs = getProchaines24Heures(arret)
     .filter(d => d.dest.toLowerCase().includes(recherche));
 
@@ -126,11 +126,9 @@ function filterHoraires() {
         let statusLabel = '';
 
         if (d.isDemain) {
-          // Bus de demain (n'est pas encore passé)
           itemClass = ' tomorrow-bus';
           statusLabel = '<div class="tomorrow-label">📅 Demain</div>';
         } else {
-          // Bus d'aujourd'hui : vérification du statut
           if (maintenant >= d.arr) {
             itemClass = ' past-bus';
             statusLabel = '<div class="past-label">Déjà passé</div>';
@@ -171,7 +169,6 @@ function initCarte() {
     L.marker([a.lat, a.lng]).addTo(map).bindPopup(`<b>${nomArret(a)}</b>`);
   });
 
-    // Fait apparaître le bouton dès que l'utilisateur déplace la carte manuellement
   map.on('dragstart', () => {
     const btn = document.getElementById('recenter-btn');
     if (btn) btn.style.display = 'block';
@@ -206,6 +203,12 @@ function findNextBus(userLat, userLng) {
 
   lastClosestStop = arretProche;
 
+  // Sélectionne l'onglet de l'arrêt le plus proche au premier repérage GPS
+  if (!autoTabSelected) {
+    selectArret(arretProche.id);
+    autoTabSelected = true;
+  }
+
   if (map && !mapCenteredOnce) {
     map.setView([arretProche.lat, arretProche.lng], 14);
     mapCenteredOnce = true;
@@ -216,7 +219,6 @@ function findNextBus(userLat, userLng) {
   let prochain = depsAujourdhui.find(d => d.h >= maintenant);
   let jourTexte = "aujourd'hui";
 
-  // S'il n'y a plus de bus aujourd'hui, on cherche le premier bus de demain
   if (!prochain) {
     const demain = new Date(now.getTime() + 86400000);
     const depsDemain = departsDuJour(arretProche, demain);
@@ -272,7 +274,7 @@ async function rafraichirLignes() {
 function brancherEvenements() {
   document.getElementById('tabs').addEventListener('click', e => {
     const btn = e.target.closest('[data-arret]');
-    if (btn) selectArret(btn.dataset.arret);
+    if (btn) selectArret(btn.dataset.arret, true);
   });
   
   document.getElementById('search-destination').addEventListener('input', filterHoraires);
@@ -347,7 +349,6 @@ async function init() {
   selectArret(defaut.id);
   afficherPeriode();
 
-  // Même logique d'initialisation pour trouver le prochain bus (aujourd'hui ou demain)
   const depsAujourdhui = departsDuJour(defaut, new Date());
   let prochain = depsAujourdhui.find(d => d.h >= hhmm(new Date()));
   let jourStr = "aujourd'hui";
