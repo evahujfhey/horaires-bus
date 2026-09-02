@@ -1,0 +1,30 @@
+name: Actualisation mensuelle des horaires
+
+on:
+  schedule:
+    # S'exécute le 1er du mois, tous les 3 mois à 2h00 du matin (UTC)
+    - cron: '0 2 1 */3 *'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Récupérer le code
+        uses: actions/checkout@v4
+
+      - name: Configurer Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Exécuter le script de génération
+        run: python build-horaires.py
+
+      - name: Enregistrer et publier les modifications
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/horaires.json
+          git commit -m "Mise à jour mensuelle automatique des horaires" || exit 0
+          git push
